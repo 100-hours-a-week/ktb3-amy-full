@@ -24,7 +24,6 @@ public class Bank {
         info.printInfo();
         myAccount.printBank();
 
-
         //도둑!!
         Thief thief = new Thief(myAccount);
         thief.start();
