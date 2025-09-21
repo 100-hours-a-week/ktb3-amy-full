@@ -1,10 +1,10 @@
 package inheritanceHomework;
 
 public class Limit extends Account {
-    int withdrawLimit = 1000000;
+    private static final int withdrawLimit = 1000000;
 
-    public Limit(String name, int birth) {
-        super(name, birth);
+    public Limit(String bankName, Information owner) {
+        super(bankName, owner);
     }
 
     // 출금 한도

@@ -1,17 +1,24 @@
 package inheritanceHomework;
 
-public class Account extends Information {
+public class Account extends WhichBank {
     int balance;
+    Information owner;
 
-    public Account(String name, int birth) {
-        super(name, birth);
+    public Account(String bankName, Information owner) {
+        super(bankName);
+        this.owner = owner;
         this.balance = 0;
     }
 
     // 입금
     public void deposit(int amount) {
-        balance += amount;
-        System.out.println(amount + "원을 입금하였습니다. 현재 잔액: " + balance + "원");
+        if (amount <= 0) {
+            System.out.println("[에러!!] 입금액은 0원보다 커야 합니다.");
+            return;
+        } else {
+            balance += amount;
+            System.out.println(amount + "원을 입금하였습니다. 현재 잔액: " + balance + "원");
+        }
     }
 
     // 출금

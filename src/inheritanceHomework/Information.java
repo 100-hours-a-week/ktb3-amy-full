@@ -4,12 +4,12 @@ import java.time.LocalDate;
 
 public class Information {
     String name;
-    int birth;
+    String personalCode;
     String date;
 
-    public Information(String name, int birth) {
+    public Information(String name, String personalCode) {
         this.name = name;
-        this.birth = birth;
+        this.personalCode = personalCode;
         this.date = LocalDate.now().toString();
     }
 

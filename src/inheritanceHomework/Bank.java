@@ -1,4 +1,5 @@
 package inheritanceHomework;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Bank {
@@ -9,10 +10,24 @@ public class Bank {
         System.out.print("이름 입력: ");
         String name = scanner.nextLine();
         System.out.print("주민번호 앞자리 입력(6자리): ");
-        int birth = scanner.nextInt();
+        String personalCode = scanner.nextLine();
 
-        Limit myAccount = new Limit(name, birth);
-        myAccount.printInfo();
+        Information info = new Information(name, personalCode);
+
+        // 은행명
+        System.out.print("은행을 선택하세요 (토스뱅크/우리은행/신한은행/농협은행/카카오뱅크 등등): ");
+        String bankName = scanner.nextLine();
+
+        // 출금 한도
+        Limit myAccount = new Limit(bankName, info);
+
+        info.printInfo();
+        myAccount.printBank();
+
+
+        //도둑!!
+        Thief thief = new Thief(myAccount);
+        thief.start();
 
         // 메뉴
         while (true) {
@@ -20,7 +35,15 @@ public class Bank {
             System.out.println("1. 입금 | 2. 출금 | 3. 잔액 확인 | 4. 종료");
             System.out.println("--------------------------------------------");
             System.out.print("번호 선택: ");
-            int choice = scanner.nextInt();
+            int choice = 0;
+
+            try {
+                choice = scanner.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("[에러] 숫자를 입력해야 합니다!");
+                scanner.nextLine();
+                continue;
+            }
 
             switch (choice) {
                 case 1:
