@@ -86,8 +86,7 @@ public class UserController {
 
         Map<String, String> user = userStore.get(userId);
         if (user == null) {
-            return ResponseEntity.status(404)
-                    .body(Map.of("message", "user_not_found", "data", null));
+            return ResponseEntity.status(404).body(Map.of("message", "user_not_found", "data", null));
         }
 
         String pw = request.get("password");
