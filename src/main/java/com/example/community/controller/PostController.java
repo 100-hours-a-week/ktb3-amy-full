@@ -57,4 +57,35 @@ public class PostController {
 
         return ResponseEntity.ok(Map.of("message", "post_detail", "data", post));
     }
+
+    //게시글 수정
+    @PutMapping("/{postId}")
+    public ResponseEntity<Map<String, Object>> updatePost(@PathVariable Long postId, @RequestBody Map<String, String> request) {
+
+        Map<String, Object> post = postStore.get(postId);
+        if (post == null) {
+            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
+        }
+
+        String title = request.get("title");
+        String content = request.get("content");
+        String imageUrl = request.get("image_url");
+
+        if (title != null) post.put("title", title);
+        if (content != null) post.put("content", content);
+        if (imageUrl != null) post.put("image_url", imageUrl);
+
+        return ResponseEntity.ok(Map.of("message", "post_updated", "data", Map.of("post_id", postId)));
+    }
+
+    //게시글 삭제
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Map<String, Object>> deletePost(@PathVariable Long postId) {
+        if (!postStore.containsKey(postId)) {
+            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
+        }
+
+        postStore.remove(postId);
+        return ResponseEntity.ok(Map.of("message", "post_deleted", "data", null));
+    }
 }

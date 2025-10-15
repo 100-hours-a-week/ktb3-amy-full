@@ -1,10 +1,7 @@
 package com.example.community.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,5 +55,63 @@ public class UserController {
         }
         //401
         return ResponseEntity.status(401).body(Map.of("message", "unauthorized", "data", null));
+    }
+
+    //회원 정보 수정
+    @PutMapping("/{userId}")
+    public ResponseEntity<Map<String, Object>> updateUser(@PathVariable Long userId, @RequestBody Map<String, String> request) {
+
+        Map<String, String> user = userStore.get(userId);
+        if (user == null) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("message", "user_not_found", "data", null));
+        }
+
+        String nickname = request.get("nickname");
+        String profileImage = request.get("profile_image");
+
+        Map<String, String> updatedUser = new HashMap<>(user);
+        if (nickname != null) updatedUser.put("nickname", nickname);
+        if (profileImage != null) updatedUser.put("profile_image", profileImage);
+
+        userStore.put(userId, updatedUser);
+
+        return ResponseEntity.ok(Map.of("message", "user_updated",
+                "data", Map.of("user_id", userId, "nickname", updatedUser.get("nickname"))));
+    }
+
+    //비밀번호 수정
+    @PutMapping("/{userId}/password")
+    public ResponseEntity<Map<String, Object>> updatePassword(@PathVariable Long userId, @RequestBody Map<String, String> request) {
+
+        Map<String, String> user = userStore.get(userId);
+        if (user == null) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("message", "user_not_found", "data", null));
+        }
+
+        String pw = request.get("password");
+        String confirm = request.get("password_confirm");
+
+        if (pw == null || confirm == null || !pw.equals(confirm)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "password_mismatch", "data", null));
+        }
+
+        Map<String, String> updatedUser = new HashMap<>(user);
+        updatedUser.put("password", pw);
+        userStore.put(userId, updatedUser);
+
+        return ResponseEntity.ok(Map.of("message", "password_updated", "data", null));
+    }
+
+    //회원 탈퇴
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Map<String, Object>> deleteUser(@PathVariable Long userId) {
+        if (!userStore.containsKey(userId)) {
+            return ResponseEntity.status(404).body(Map.of("message", "user_not_found", "data", null));
+        }
+
+        userStore.remove(userId);
+        return ResponseEntity.ok(Map.of("message", "user_deleted", "data", null));
     }
 }
