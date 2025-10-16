@@ -25,6 +25,7 @@ public class PostController {
              return ResponseEntity.badRequest().body(Map.of("message", "invalid_request", "data", null));
          }
 
+         //게시글 생성
          Map<String, Object> postData = new HashMap<>();
          postData.put("post_id", postId);
          postData.put("title", title);
@@ -87,5 +88,34 @@ public class PostController {
 
         postStore.remove(postId);
         return ResponseEntity.ok(Map.of("message", "post_deleted", "data", null));
+    }
+    //좋아요 추가
+    @PostMapping("/{postId}/likes")
+    public ResponseEntity<Map<String, Object>> addLike(@PathVariable Long postId) {
+        Map<String, Object> post = postStore.get(postId);
+        if (post == null) {
+            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
+        }
+
+        //좋아요 수 가져오기
+        int likes = (int) post.getOrDefault("likes", 0);
+        post.put("likes", likes + 1);
+
+        return ResponseEntity.ok(Map.of("message", "like_added", "data", Map.of("likes", post.get("likes"))));
+    }
+
+    //좋아요 취소
+    @DeleteMapping("/{postId}/likes")
+    public ResponseEntity<Map<String, Object>> removeLike(@PathVariable Long postId) {
+        Map<String, Object> post = postStore.get(postId);
+        if (post == null) {
+            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
+        }
+
+        // 좋아요 수가 0보다 작아지지 않도록 제한
+        int likes = (int) post.getOrDefault("likes", 0);
+        post.put("likes", Math.max(likes - 1, 0));
+
+        return ResponseEntity.ok(Map.of("message", "like_removed", "data", Map.of("likes", post.get("likes"))));
     }
 }
