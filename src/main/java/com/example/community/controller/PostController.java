@@ -1,121 +1,72 @@
 package com.example.community.controller;
 
+import com.example.community.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/posts")
 public class PostController {
-    public Map<Long, Map<String, Object>> postStore = new HashMap<>();
-    public long postId = 1;
+
+    //PostService 주입
+    public PostService postService;
+    public PostController(PostService postService) {
+        this.postService = postService;
+    }
+
+    //게시글 작성 API
+    @Operation(summary = "게시글 작성", description = "새로운 게시글을 등록합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "post_created"),
+            @ApiResponse(responseCode = "400", description = "invalid_request")
+    })
 
     //게시글 작성
     @PostMapping
     public ResponseEntity<Map<String, Object>> createPost(@RequestBody Map<String, String> request) {
-         String title = request.get("title");
-         String content = request.get("content");
-         String imageUrl = request.get("image_url");
-
-         //400
-         if(title == null || content == null) {
-             return ResponseEntity.badRequest().body(Map.of("message", "invalid_request", "data", null));
-         }
-
-         //게시글 생성
-         Map<String, Object> postData = new HashMap<>();
-         postData.put("post_id", postId);
-         postData.put("title", title);
-         postData.put("content", content);
-         postData.put("image_url", imageUrl);
-         postData.put("author", "amy");
-         postData.put("date", new Date());
-         postStore.put(postId, postData);
-
-         //201
-         Map<String, Object> responseData = Map.of("post_id", postId++);
-         return ResponseEntity.status(201).body(Map.of("message", "post_created", "data", responseData));
+        //요청을 Service에 전달하고 결과 반환
+        return postService.createPost(request);
     }
 
-    //게시글 목록 조회
+    //게시글 전체 목록 조회
     @GetMapping
-    public ResponseEntity<Map<String, Object>> ALL() {
-        return ResponseEntity.ok(Map.of("message", "post_list", "data", postStore.values()));
+    public ResponseEntity<Map<String, Object>> getAllPosts() {
+        //Service 호출
+        return postService.AllPosts();
     }
 
     //게시글 상세 조회
     @GetMapping("/{postId}")
-    public ResponseEntity<Map<String, Object>> Detail(@PathVariable Long postId) {
-        Map<String, Object> post = postStore.get(postId);
-
-        //404
-        if (post == null) {
-            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
-        }
-
-        return ResponseEntity.ok(Map.of("message", "post_detail", "data", post));
+    public ResponseEntity<Map<String, Object>> getPostDetail(@PathVariable Long postId) {
+        return postService.PostDetail(postId);
     }
 
     //게시글 수정
     @PutMapping("/{postId}")
     public ResponseEntity<Map<String, Object>> updatePost(@PathVariable Long postId, @RequestBody Map<String, String> request) {
-
-        Map<String, Object> post = postStore.get(postId);
-        if (post == null) {
-            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
-        }
-
-        String title = request.get("title");
-        String content = request.get("content");
-        String imageUrl = request.get("image_url");
-
-        if (title != null) post.put("title", title);
-        if (content != null) post.put("content", content);
-        if (imageUrl != null) post.put("image_url", imageUrl);
-
-        return ResponseEntity.ok(Map.of("message", "post_updated", "data", Map.of("post_id", postId)));
+        return postService.updatePost(postId, request);
     }
 
     //게시글 삭제
     @DeleteMapping("/{postId}")
     public ResponseEntity<Map<String, Object>> deletePost(@PathVariable Long postId) {
-        if (!postStore.containsKey(postId)) {
-            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
-        }
-
-        postStore.remove(postId);
-        return ResponseEntity.ok(Map.of("message", "post_deleted", "data", null));
+        return postService.deletePost(postId);
     }
+
     //좋아요 추가
     @PostMapping("/{postId}/likes")
     public ResponseEntity<Map<String, Object>> addLike(@PathVariable Long postId) {
-        Map<String, Object> post = postStore.get(postId);
-        if (post == null) {
-            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
-        }
-
-        //좋아요 수 가져오기
-        int likes = (int) post.getOrDefault("likes", 0);
-        post.put("likes", likes + 1);
-
-        return ResponseEntity.ok(Map.of("message", "like_added", "data", Map.of("likes", post.get("likes"))));
+        return postService.addLike(postId);
     }
 
     //좋아요 취소
     @DeleteMapping("/{postId}/likes")
     public ResponseEntity<Map<String, Object>> removeLike(@PathVariable Long postId) {
-        Map<String, Object> post = postStore.get(postId);
-        if (post == null) {
-            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
-        }
-
-        // 좋아요 수가 0보다 작아지지 않도록 제한
-        int likes = (int) post.getOrDefault("likes", 0);
-        post.put("likes", Math.max(likes - 1, 0));
-
-        return ResponseEntity.ok(Map.of("message", "like_removed", "data", Map.of("likes", post.get("likes"))));
+        return postService.removeLike(postId);
     }
 }
