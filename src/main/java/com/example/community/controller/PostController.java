@@ -57,16 +57,4 @@ public class PostController {
     public ResponseEntity<Map<String, Object>> deletePost(@PathVariable Long postId) {
         return postService.deletePost(postId);
     }
-
-    //좋아요 추가
-    @PostMapping("/{postId}/likes")
-    public ResponseEntity<Map<String, Object>> addLike(@PathVariable Long postId) {
-        return postService.addLike(postId);
-    }
-
-    //좋아요 취소
-    @DeleteMapping("/{postId}/likes")
-    public ResponseEntity<Map<String, Object>> removeLike(@PathVariable Long postId) {
-        return postService.removeLike(postId);
-    }
 }

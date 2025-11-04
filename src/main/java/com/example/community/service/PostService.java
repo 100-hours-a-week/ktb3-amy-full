@@ -101,46 +101,4 @@ public class PostService {
         //삭제 성공 메시지 반환
         return ResponseEntity.ok(Map.of("message", "post_deleted", "data", null));
     }
-
-    //좋아요 추가
-    public ResponseEntity<Map<String, Object>> addLike(Long postId) {
-        //게시글 조회
-        Map<String, Object> post = postRepository.findById(postId);
-
-        //404
-        if (post == null) {
-            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
-        }
-
-        //좋아요 수 증가
-        int like = (int) post.getOrDefault("like", 0);
-        post.put("like", like + 1);
-
-        //수정된 데이터 저장
-        postRepository.update(postId, post);
-
-        //추가 성공 메시지 반환
-        return ResponseEntity.ok(Map.of("message", "like_added", "data", Map.of("like", post.get("like"))));
-    }
-
-    //좋아요 취소
-    public ResponseEntity<Map<String, Object>> removeLike(Long postId) {
-        //게시글 조회
-        Map<String, Object> post = postRepository.findById(postId);
-
-        //404
-        if (post == null) {
-            return ResponseEntity.status(404).body(Map.of("message", "post_not_found", "data", null));
-        }
-
-        //좋아요 수 감소 (0 이하로 내려가지 않도록 Math.max 사용!)
-        int like = (int) post.getOrDefault("like", 0);
-        post.put("like", Math.max(like - 1, 0));
-
-        //수정된 데이터 저장
-        postRepository.update(postId, post);
-
-        //취소 성공 메시지 반환
-        return ResponseEntity.ok(Map.of("message", "like_removed", "data", Map.of("like", post.get("like"))));
-    }
 }
