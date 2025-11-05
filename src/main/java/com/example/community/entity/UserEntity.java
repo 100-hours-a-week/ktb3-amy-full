@@ -23,7 +23,7 @@ import java.util.List;
 })
 @Getter
 @Setter
-public class UserEntity {
+public class UserEntity extends AbstractAuditable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -96,5 +96,8 @@ public class UserEntity {
     public void removePost(PostEntity postEntity) {
         this.posts.remove(postEntity);
         postEntity.setAuthor(null);
+    }
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

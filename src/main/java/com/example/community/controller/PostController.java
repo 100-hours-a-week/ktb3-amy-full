@@ -1,60 +1,154 @@
 package com.example.community.controller;
 
+import com.example.community.dto.PostSummaryDto;
+import com.example.community.entity.PostEntity;
 import com.example.community.service.PostService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.http.ResponseEntity;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/api/v1/posts")
+@RequiredArgsConstructor
 public class PostController {
 
-    //PostService 주입
-    public PostService postService;
-    public PostController(PostService postService) {
-        this.postService = postService;
-    }
+    private final PostService postService;
 
-    //게시글 작성 API
-    @Operation(summary = "게시글 작성", description = "새로운 게시글을 등록합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "post_created"),
-            @ApiResponse(responseCode = "400", description = "invalid_request")
-    })
-
-    //게시글 작성
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createPost(@RequestBody Map<String, String> request) {
-        //요청을 Service에 전달하고 결과 반환
-        return postService.createPost(request);
+    public PostResponse create(@RequestBody CreatePostRequest request) {
+        PostEntity postEntity = postService.create(request.authorId, request.title, request.content);
+        return PostResponse.of(postEntity);
     }
 
-    //게시글 전체 목록 조회
-    @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllPosts() {
-        //Service 호출
-        return postService.AllPosts();
+    @GetMapping("/{id}")
+    public PostResponse get(@PathVariable Long id) {
+        return PostResponse.of(postService.findById(id));
     }
 
-    //게시글 상세 조회
-    @GetMapping("/{postId}")
-    public ResponseEntity<Map<String, Object>> getPostDetail(@PathVariable Long postId) {
-        return postService.PostDetail(postId);
+    @PatchMapping("/{id}")
+    public PostResponse update(@PathVariable Long id, @RequestBody UpdatePostRequest request) {
+        PostEntity updatedPost = postService.update(id, request.title, request.content);
+        return PostResponse.of(updatedPost);
     }
 
-    //게시글 수정
-    @PutMapping("/{postId}")
-    public ResponseEntity<Map<String, Object>> updatePost(@PathVariable Long postId, @RequestBody Map<String, String> request) {
-        return postService.updatePost(postId, request);
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        postService.delete(id);
     }
 
-    //게시글 삭제
-    @DeleteMapping("/{postId}")
-    public ResponseEntity<Map<String, Object>> deletePost(@PathVariable Long postId) {
-        return postService.deletePost(postId);
+    @GetMapping("/search/title/keyword")
+    public List<PostResponse> searchByTitle(@RequestParam String keyword) {
+        return postService.findByTitle(keyword).stream().map(PostResponse::of).toList();
+    }
+
+
+    @GetMapping("/search/author/nickname")
+    public List<PostResponse> byAuthor(@RequestParam String nickname) {
+        return postService.findByAuthorNickname(nickname).stream().map(PostResponse::of).toList();
+    }
+
+    @GetMapping("/title/author/{authorId}")
+    public List<String> getTitlesByAuthor(@PathVariable Long authorId) {
+        return postService.findTitlesByAuthorId(authorId);
+    }
+
+    @GetMapping("/summaries/keyword")
+    public List<PostSummaryDto> summaryByTitle(@RequestParam String keyword) {
+        return postService.findPostSummaries(keyword);
+    }
+
+    @GetMapping("/all/n-plus-one")
+    public List<PostResponse> allWithNPlusOne() {
+        return postService.findALlPostsWithNPlusOne().stream().map(PostResponse::of).toList();
+    }
+
+    @GetMapping("/all/entity-graph")
+    public List<PostResponse> allWithEntityGraph() {
+        return postService.findAllPostsByEntityGraph().stream().map(PostResponse::of).toList();
+    }
+
+    // pageable
+    @GetMapping("/search/list")
+    public List<PostResponse> searchAsList(@RequestParam String keyword) {
+        return postService.searchAsList(keyword).stream().map(PostResponse::of).toList();
+    }
+
+    @GetMapping("/search/page")
+    public Page<PostResponse> searchAsPage(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        return postService.searchAsPage(keyword, page, size, sortBy, direction).map(PostResponse::of);
+    }
+
+    @GetMapping("/search/slice")
+    public Slice<PostResponse> searchAsSlice(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        return postService.searchAsSlice(keyword, page, size, sortBy, direction).map(PostResponse::of);
+    }
+
+    @Data
+    public static class UpdatePostRequest {
+        private String title;
+        private String content;
+    }
+
+    @Data
+    public static class CreatePostRequest {
+        private Long authorId;
+        private String title;
+        private String content;
+    }
+
+    @Data
+    public static class PostResponse {
+        private Long id;
+        private String title;
+        private String content;
+        private Long authorId;
+        private String authorNickname;
+
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+        private String createdBy;
+        private String updatedBy;
+
+        public static PostResponse of(PostEntity postEntity) {
+            return new PostResponse(postEntity.getPostId(), postEntity.getTitle(), postEntity.getContent(),
+                    postEntity.getAuthor().getId(), postEntity.getAuthor().getNickname(),
+                    postEntity.getCreatedAt(),
+                    postEntity.getUpdatedAt(),
+                    postEntity.getCreatedBy(),
+                    postEntity.getUpdatedBy());
+        }
+
+        public PostResponse(Long id, String title, String content, Long authorId, String authorNickname,
+                            LocalDateTime createdAt,
+                            LocalDateTime updatedAt,
+                            String createdBy,
+                            String updatedBy) {
+            this.id = id;
+            this.title = title;
+            this.content = content;
+            this.authorId = authorId;
+            this.authorNickname = authorNickname;
+            this.createdAt = createdAt;
+            this.updatedAt = updatedAt;
+            this.createdBy = createdBy;
+            this.updatedBy = updatedBy;
+        }
     }
 }

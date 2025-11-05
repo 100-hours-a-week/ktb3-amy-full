@@ -28,7 +28,7 @@ import java.util.Set;
 })
 @Getter
 @Setter
-public class PostEntity {
+public class PostEntity extends AbstractAuditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
@@ -37,6 +37,8 @@ public class PostEntity {
     private String title;
     private String content;
     private String image_url;
+
+    private int likes = 0;
 
     @Enumerated(EnumType.STRING)
     private PostType postType;
@@ -77,5 +79,19 @@ public class PostEntity {
         this.content = content;
         this.postType = postType;
         this.author = author;
+    }
+
+    public PostEntity(String title, String content, UserEntity author) {
+        this.title = title;
+        this.content = content;
+        this.author = author;
+    }
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
     }
 }
