@@ -1,52 +1,60 @@
 package com.example.community.repository;
 
+import com.example.community.dto.UserInfoDto;
+import com.example.community.entity.UserEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Repository
-public class UserRepository {
+public interface UserRepository extends JpaRepository<UserEntity, Long>, UserRepositoryCustom {
+    // 닉네임이 정확히 일치하는 사용자들을 id 내림차순으로 조회
+    // List<UserEntity> findByNicknameContainingIgnoreCaseOrderByIdDesc(String keyword);
 
-    //DB 대신 HashMap 사용!
-    public Map<Long, Map<String, String>> userStore = new HashMap<>();
-    public long userId = 1;
+    @Query("""
+           select u
+           from UserEntity u
+           where lower(u.nickname) like lower(concat('%', :keyword, '%'))
+           order by u.id desc
+           """)
+    List<UserEntity> searchByNickname(String keyword);
 
-    //회원 데이터 저장 (회원가입 시 사용)
-    public Map<String, Object> save(Map<String, String> userData) {
-        //새로운 회원 정보를 userStore에 추가 (key: userId, value: 회원 정보)
-        userStore.put(userId, userData);
+    // 값(스칼라) 투영: 이메일만 뽑기
+    @Query("select u.email from UserEntity u where u.nickname = :nickname")
+    List<String> findEmailsByNickname(String nickname);
 
-        //회원 ID 반환
-        Map<String, Object> response = Map.of("user_id", userId++);
+    // DTO 투영: id, email, nickname만 묶어서 반환
+    @Query("""
+           select new com.example.community.dto.UserInfoDto(u.id, u.email, u.nickname)
+           from UserEntity u
+           where lower(u.nickname) like lower(concat('%', :keyword, '%'))
+           order by u.id desc
+           """)
+    List<UserInfoDto> findUserByNicknameWithDto(String keyword);
 
-        //저장 결과 반환
-        return response;
-    }
+    // 특정 이메일이 존재하는지 확인 (true/false 반환)
+    boolean existsByEmail(String email);
 
-    //전체 회원 목록 조회
-    public Collection<Map<String, String>> findAll() {
-        return userStore.values();
-    }
+    // 닉네임이 일치하는 사용자 수를 카운트
+    long countByNickname(String nickname);
 
-    //회원 ID로 특정 회원 정보 조회
-    public Map<String, String> findById(Long id) {
-        return userStore.get(id);
-    }
+    // 컬렉션(posts) 즉시 로딩: N+1 줄이기(중복 row 주의)
+    @EntityGraph(attributePaths = "posts")
+    List<UserEntity> findAllBy();
 
-    //회원 정보 업데이트
-    public void update(Long id, Map<String, String> updatedUser) {
-        userStore.put(id, updatedUser);
-    }
 
-    //회원 삭제
-    public void delete(Long id) {
-        userStore.remove(id);
-    }
+    // List: 닉네임 부분 검색
+    List<UserEntity> findByNicknameContainingIgnoreCase(String keyword);
 
-    //회원 존재 여부 확인
-    public boolean existById(Long id) {
-        return userStore.containsKey(id);
-    }
+    // Page: 닉네임 부분 검색 + 페이징/정렬 + total count 포함
+    Page<UserEntity> findByNicknameContainingIgnoreCase(String keyword, Pageable pageable);
+
+    // Slice: 닉네임 부분 검색 + 다음 페이지 여부만
+    Slice<UserEntity> findSliceByNicknameContainingIgnoreCase(String keyword, Pageable pageable);
 }

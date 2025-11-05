@@ -1,117 +1,106 @@
 package com.example.community.service;
 
+import com.example.community.dto.UserInfoDto;
+import com.example.community.entity.UserEntity;
 import com.example.community.repository.UserRepository;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
-    // Repository 주입
     private final UserRepository userRepository;
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+
+    @Transactional
+    public UserEntity create(String email, String password, String nickname, String profile_image) {
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("duplicate_email");
+        }
+        UserEntity userEntity = new UserEntity(email, password, nickname, profile_image);
+        return userRepository.save(userEntity);
     }
 
-    //회원가입
-    public ResponseEntity<Map<String, Object>> signup(Map<String, String> request) {
-
-        //값 추출
-        String email = request.get("email");
-        String password = request.get("password");
-        String nickname = request.get("nickname");
-
-        //필수 입력값(email, password, nickname) 검증
-        if (email == null || password == null || nickname == null) {
-            //400
-            return ResponseEntity.badRequest().body(Map.of("message", "invalid_request", "data", null));
-        }
-
-        //회원 데이터 생성
-        Map<String, String> userData = new HashMap<>();
-        userData.put("email", email);
-        userData.put("password", password);
-        userData.put("nickname", nickname);
-
-        //Repository에 저장 후 ID 반환
-        Map<String, Object> data = userRepository.save(userData);
-
-        //201
-        return ResponseEntity.status(201).body(Map.of("message", "register_success", "data", data));
+    public UserEntity findById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("userEntity not found"));
     }
 
-    //회원 정보 수정
-    public ResponseEntity<Map<String, Object>> updateUser(Long userId, Map<String, String> request) {
-
-        // 해당 ID의 회원 정보 조회
-        Map<String, String> user = userRepository.findById(userId);
-
-        //404
-        if (user == null) {
-            return ResponseEntity.status(404).body(Map.of("message", "user_not_found", "data", null));
-        }
-
-        //기존 회원 데이터를 복사하여 수정할 데이터 생성
-        Map<String, String> updatedUser = new HashMap<>(user);
-
-        //닉네임 및 프로필 이미지 변경 (입력값 있을 경우에만!)
-        if (request.get("nickname") != null) updatedUser.put("nickname", request.get("nickname"));
-        if (request.get("profile_image") != null) updatedUser.put("profile_image", request.get("profile_image"));
-
-        //수정된 회원 정보 저장
-        userRepository.update(userId, updatedUser);
-
-        //수정 성공 응답 반환
-        return ResponseEntity.ok(Map.of("message", "user_updated", "data", Map.of("user_id", userId, "nickname", updatedUser.get("nickname"))
-        ));
+    public UserEntity getReferenceById(Long id) {
+        return userRepository.getReferenceById(id);
     }
 
-    //비밀번호 수정
-    public ResponseEntity<Map<String, Object>> updatePassword(Long userId, Map<String, String> request) {
-
-        //ID로 회원 정보 조회
-        Map<String, String> user = userRepository.findById(userId);
-
-        //404
-        if (user == null) {
-            return ResponseEntity.status(404).body(Map.of("message", "user_not_found", "data", null));
+    @Transactional
+    public UserEntity update(Long id, String nickname) {
+        UserEntity userEntity = findById(id);
+        if (nickname != null) {
+            userEntity.changeNickname(nickname);
         }
-
-        //비밀번호 및 비밀번호 확인 값 추출
-        String pw = request.get("password");
-        String confirm = request.get("password_confirm");
-
-        //비밀번호 검증 (값이 없거나 일치하지 않으면 실패!)
-        if (pw == null || confirm == null || !pw.equals(confirm)) {
-            return ResponseEntity.badRequest().body(Map.of("message", "password_mismatch", "data", null));
-        }
-
-        //기존 사용자 정보 복사 후 비밀번호 변경
-        Map<String, String> updatedUser = new HashMap<>(user);
-        updatedUser.put("password", pw);
-
-        //변경된 정보 저장
-        userRepository.update(userId, updatedUser);
-
-        //성공 응답 반환
-        return ResponseEntity.ok(Map.of("message", "password_updated", "data", null));
+        return userEntity;
     }
 
-    //회원 탈퇴
-    public ResponseEntity<Map<String, Object>> deleteUser(Long userId) {
+    @Transactional
+    public void delete(Long id) {
+        // 프록시 반환 (접근 시 초기화)
+        userRepository.delete(findById(id));
+    }
 
-        //회원 존재 여부 확인
-        if (!userRepository.existById(userId)) {
-            //404
-            return ResponseEntity.status(404).body(Map.of("message", "user_not_found", "data", null));
-        }
+    public List<UserEntity> findByNicknameKeyword(String keyword) {
+        // return userRepository.findByNicknameContainingIgnoreCaseOrderByIdDesc(keyword);
+        return userRepository.searchByNickname(keyword);
+    }
 
-        //존재 시 회원 정보 삭제
-        userRepository.delete(userId);
+    public List<String> findEmailsByNickname(String nickname) {
+        return userRepository.findEmailsByNickname(nickname);
+    }
 
-        //삭제 성공 응답 반환
-        return ResponseEntity.ok(Map.of("message", "user_deleted", "data", null));
+    public List<UserInfoDto> findUserByNicknameWithDto(String keyword) {
+        return userRepository.findUserByNicknameWithDto(keyword);
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public long countByNickname(String nickname) {
+        return userRepository.countByNickname(nickname);
+    }
+
+    // author는 프록시. 컨트롤러에서 닉네임 접근할 때마다 추가 SELECT → N+1
+    public List<UserEntity> findAllUsersWithNPlusOne() {
+        return userRepository.findAll();
+    }
+
+    // posts 즉시 로딩(중복 row→List엔 중복 요소 X, 하지만 SQL은 join됨)
+    public List<UserEntity> findAllUsersWithEntityGraph() {
+        return userRepository.findAllBy();
+    }
+
+    // Pageable
+    // List
+    public List<UserEntity> searchAsList(String keyword) {
+        return userRepository.findByNicknameContainingIgnoreCase(keyword);
+    }
+
+    // Page
+    public Page<UserEntity> searchAsPage(String keyword, int page, int size, String sortBy, String direction) {
+        Sort sort = Sort.by("desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return userRepository.findByNicknameContainingIgnoreCase(keyword, pageable);
+    }
+
+    // Slice
+    public Slice<UserEntity> searchAsSlice(String keyword, int page, int size, String sortBy, String direction) {
+        Sort sort = Sort.by("desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return userRepository.findSliceByNicknameContainingIgnoreCase(keyword, pageable);
+    }
+
+    // Custom Repository
+    public long countUsersByNicknameContains(String keyword) {
+        return userRepository.countUsersByNicknameContains(keyword);
     }
 }
