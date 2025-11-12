@@ -15,12 +15,12 @@ const passwordError = document.getElementById("passwordError");
 const passwordConfirmError = document.getElementById("passwordConfirmError");
 const nicknameError = document.getElementById("nicknameError");
 
-let profileImage = null;
+let profileImageBase64 = null;
 
-// 유효성 검사
-const emailValidate = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-const passwordValidate = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,20}$/;
-const nicknameValidate = /^[^\s]{1,10}$/;
+// 정규식
+const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,20}$/;
+const nicknameRegex = /^[^\s]{1,10}$/;
 
 // 뒤로가기 버튼
 backBtn.addEventListener("click", () => {
@@ -33,7 +33,7 @@ profileInput.addEventListener("change", (e) => {
   if (!file) {
     profilePreview.innerHTML = "+";
     profileError.textContent = "*프로필 사진을 추가해주세요.";
-    profileImage = null;
+    profileImageBase64 = null;
     return;
   }
 
@@ -41,7 +41,7 @@ profileInput.addEventListener("change", (e) => {
   reader.onload = () => {
     profilePreview.innerHTML = `<img src="${reader.result}" />`;
     profileError.textContent = "";
-    profileImage = reader.result;
+    profileImageBase64 = reader.result;
   };
   reader.readAsDataURL(file);
 });
@@ -55,7 +55,7 @@ emailInput.addEventListener("blur", async () => {
     return;
   }
 
-  if (!emailValidate.test(email)) {
+  if (!emailRegex.test(email)) {
     emailError.textContent = "*올바른 이메일 주소 형식을 입력해주세요. (예: example@example.com)";
     return;
   }
@@ -81,7 +81,7 @@ passwordInput.addEventListener("blur", () => {
 
   if (!pw) {
     passwordError.textContent = "*비밀번호를 입력해주세요";
-  } else if (!passwordValidate.test(pw)) {
+  } else if (!pwRegex.test(pw)) {
     passwordError.textContent = "*비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
   } else {
     passwordError.textContent = "";
@@ -139,15 +139,15 @@ nicknameInput.addEventListener("blur", async () => {
 });
 
 // 버튼 활성화
-function checkValidate() {
-  const allValidate =
-    profileImage &&
-    emailValidate.test(emailInput.value) &&
-    passwordValidate.test(passwordInput.value) &&
+function checkFormValid() {
+  const allValid =
+    profileImageBase64 &&
+    emailRegex.test(emailInput.value) &&
+    pwRegex.test(passwordInput.value) &&
     passwordInput.value === passwordConfirmInput.value &&
-    nicknameValidate.test(nicknameInput.value);
+    nicknameRegex.test(nicknameInput.value);
 
-  if (allValidate) {
+  if (allValid) {
     signupBtn.classList.add("active");
   } else {
     signupBtn.classList.remove("active");
@@ -155,7 +155,7 @@ function checkValidate() {
 }
 
 document.querySelectorAll("input").forEach((input) => {
-  input.addEventListener("input", checkValidate);
+  input.addEventListener("input", checkFormValid);
 });
 
 // 회원가입 요청
@@ -166,7 +166,7 @@ signupBtn.addEventListener("click", async () => {
     email: emailInput.value,
     password: passwordInput.value,
     nickname: nicknameInput.value,
-    profile_image: profileImage
+    profile_image: profileImageBase64
   };
 
   try {

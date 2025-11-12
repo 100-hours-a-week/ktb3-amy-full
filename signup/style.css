@@ -97,12 +97,12 @@ input {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  background-color: #aca0eb;
+  background-color: #aca0eb; /* 비활성 색상 */
   transition: background-color 0.3s ease;
 }
 
 .btn.active {
-  background-color: #7f6aee;
+  background-color: #7f6aee; /* 유효성 통과 시 */
 }
 
 .btn-sub {

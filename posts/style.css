@@ -1,0 +1,116 @@
+body {
+  font-family: "Pretendard", sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.profile {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.intro {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.btn {
+  background-color: #aca0eb;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: 600;
+}
+
+.btn:hover {
+  background-color: #7f6aee;
+}
+
+/* 게시글 목록 */
+.post-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 60px;
+}
+
+.post-card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+  width: 85%;
+  max-width: 600px;
+  padding: 20px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.post-card:hover {
+  transform: scale(1.01);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post-title {
+  font-size: 17px;
+  font-weight: bold;
+  color: #333;
+  max-width: 75%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.post-meta {
+  font-size: 12px;
+  color: #777;
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+}
+
+.post-author {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #555;
+}
+
+.post-author img {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
