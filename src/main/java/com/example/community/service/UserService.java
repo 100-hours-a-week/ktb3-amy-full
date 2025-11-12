@@ -1,5 +1,6 @@
 package com.example.community.service;
 
+import com.example.community.config.JwtTokenProvider;
 import com.example.community.dto.UserInfoDto;
 import com.example.community.entity.UserEntity;
 import com.example.community.repository.UserRepository;
@@ -14,7 +15,21 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
+
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+
+    public String login(String email, String password) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("unauthorized"));
+
+        if (!user.getPassword().equals(password)) {
+            throw new IllegalArgumentException("unauthorized");
+        }
+
+        // JWT 토큰 생성
+        return jwtTokenProvider.generateToken(email);
+    }
 
     @Transactional
     public UserEntity create(String email, String password, String nickname, String profile_image) {

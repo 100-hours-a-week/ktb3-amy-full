@@ -12,12 +12,32 @@ import com.example.community.dto.CreateUserRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+
+    @PostMapping("/login")
+    public Map<String, Object> login(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String password = request.get("password");
+
+        try {
+            String token = userService.login(email, password);
+            return Map.of(
+                    "message", "login_success",
+                    "data", Map.of("token", token)
+            );
+        } catch (IllegalArgumentException e) {
+            return Map.of(
+                    "message", e.getMessage(),
+                    "data", null
+            );
+        }
+    }
 
     @PostMapping
     public UserResponse create(@RequestBody CreateUserRequest request) {

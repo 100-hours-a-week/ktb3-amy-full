@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long>, UserRepositoryCustom {
@@ -57,4 +58,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, UserRep
 
     // Slice: 닉네임 부분 검색 + 다음 페이지 여부만
     Slice<UserEntity> findSliceByNicknameContainingIgnoreCase(String keyword, Pageable pageable);
+
+    Optional<UserEntity> findByEmail(String email);
 }
