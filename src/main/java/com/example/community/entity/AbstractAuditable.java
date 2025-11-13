@@ -12,21 +12,24 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@EntityListeners(AuditingEntityListener.class)
-@MappedSuperclass
 @Getter
-public class AbstractAuditable {
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class AbstractAuditable {
+
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name = "created_at", nullable = false, insertable = true, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
+    @Column(name = "updated_at", insertable = true)
     private LocalDateTime updatedAt;
 
     @CreatedBy
-    @Column(updatable = false)
+    @Column(name = "created_by", updatable = false)
     private String createdBy;
 
     @LastModifiedBy
+    @Column(name = "updated_by")
     private String updatedBy;
 }

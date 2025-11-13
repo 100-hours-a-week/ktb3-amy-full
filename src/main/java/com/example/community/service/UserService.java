@@ -1,6 +1,5 @@
 package com.example.community.service;
 
-import com.example.community.config.JwtTokenProvider;
 import com.example.community.dto.UserInfoDto;
 import com.example.community.entity.UserEntity;
 import com.example.community.repository.UserRepository;
@@ -17,18 +16,18 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;
-
-    public String login(String email, String password) {
+    public boolean login(String email, String password) {
+        // 이메일로 사용자 조회
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("unauthorized"));
 
+        // 비밀번호 비교
         if (!user.getPassword().equals(password)) {
             throw new IllegalArgumentException("unauthorized");
         }
 
-        // JWT 토큰 생성
-        return jwtTokenProvider.generateToken(email);
+        // 로그인 성공
+        return true;
     }
 
     @Transactional

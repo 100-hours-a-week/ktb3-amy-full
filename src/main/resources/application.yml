@@ -14,7 +14,21 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    auditing:
+      enabled: true
+
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: default
 
 logging:
   level:
     org.hibernate.SQL: debug
+    org:
+      springframework:
+        data:
+          jpa:
+            domain:
+              support:
+                AuditingHandler: DEBUG

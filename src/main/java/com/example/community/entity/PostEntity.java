@@ -3,6 +3,7 @@ package com.example.community.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -41,7 +42,7 @@ public class PostEntity extends AbstractAuditable {
     private int likes = 0;
 
     @Enumerated(EnumType.STRING)
-    private PostType postType;
+    private PostType postType = PostType.FREE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // FK(postEntity.user_id) → userEntity.user_id
@@ -53,10 +54,6 @@ public class PostEntity extends AbstractAuditable {
             joinColumns = @JoinColumn(name = "post_id")
     )
     private Set<Tag> tags = new HashSet<>();
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
 
     protected PostEntity() {
     }

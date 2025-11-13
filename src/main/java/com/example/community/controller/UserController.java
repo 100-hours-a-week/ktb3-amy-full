@@ -26,16 +26,17 @@ public class UserController {
         String password = request.get("password");
 
         try {
-            String token = userService.login(email, password);
-            return Map.of(
-                    "message", "login_success",
-                    "data", Map.of("token", token)
-            );
+            boolean success = userService.login(email, password);
+            if (success) {
+                return Map.of(
+                        "message", "login_success",
+                        "data", Map.of("email", email)
+                );
+            } else {
+                return Map.of("message", "login_fail");
+            }
         } catch (IllegalArgumentException e) {
-            return Map.of(
-                    "message", e.getMessage(),
-                    "data", null
-            );
+            return Map.of("message", "unauthorized");
         }
     }
 

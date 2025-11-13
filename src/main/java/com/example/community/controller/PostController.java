@@ -1,5 +1,6 @@
 package com.example.community.controller;
 
+import com.example.community.dto.PostResponse;
 import com.example.community.dto.PostSummaryDto;
 import com.example.community.entity.PostEntity;
 import com.example.community.service.PostService;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -20,9 +22,25 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public PostResponse create(@RequestBody CreatePostRequest request) {
+    public Map<String, Object> create(@RequestBody CreatePostRequest request) {
         PostEntity postEntity = postService.create(request.authorId, request.title, request.content);
-        return PostResponse.of(postEntity);
+
+        return Map.of(
+                "message", "post_created",
+                "data", PostResponse.of(postEntity)
+        );
+    }
+
+    @GetMapping
+    public Map<String, Object> getAllPosts(@RequestParam(defaultValue = "1") int page) {
+        List<PostResponse> posts = postService.findAllPosts(page).stream()
+                .map(PostResponse::of)
+                .toList();
+
+        return Map.of(
+                "message", "post_list",
+                "data", posts
+        );
     }
 
     @GetMapping("/{id}")
@@ -83,7 +101,7 @@ public class PostController {
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "postId") String sortBy,
             @RequestParam(defaultValue = "desc") String direction
     ) {
         return postService.searchAsPage(keyword, page, size, sortBy, direction).map(PostResponse::of);
@@ -91,10 +109,10 @@ public class PostController {
 
     @GetMapping("/search/slice")
     public Slice<PostResponse> searchAsSlice(
-            @RequestParam String keyword,
+            @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "postId") String sortBy,
             @RequestParam(defaultValue = "desc") String direction
     ) {
         return postService.searchAsSlice(keyword, page, size, sortBy, direction).map(PostResponse::of);

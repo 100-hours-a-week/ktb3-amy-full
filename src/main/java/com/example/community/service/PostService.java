@@ -20,10 +20,25 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Transactional
-    public PostEntity create (Long authorId, String title, String content) {
-        UserEntity author = userRepository.findById(authorId).orElseThrow(() -> new IllegalArgumentException("userEntity not found"));
+    public PostEntity create(Long authorId, String title, String content) {
+        if (authorId == null) {
+            throw new IllegalArgumentException("authorId must not be null");
+        }
+
+        UserEntity author = userRepository.findById(authorId)
+                .orElseThrow(() -> new IllegalArgumentException("userEntity not found"));
+
         PostEntity postEntity = new PostEntity(title, content, author);
-        return postRepository.save(postEntity);
+
+        // 저장
+        PostEntity saved = postRepository.save(postEntity);
+
+        // 즉시 flush() 실행 — DB에 insert 쿼리 반영
+        postRepository.flush();
+
+        // DB에서 다시 조회 — Auditing 필드가 채워진 최신 상태 반환
+        return postRepository.findById(saved.getPostId())
+                .orElseThrow(() -> new IllegalArgumentException("postEntity not found"));
     }
 
     public PostEntity findById(Long id) {
@@ -66,7 +81,13 @@ public class PostService {
     }
 
     public List<PostEntity> findAllPostsByEntityGraph() {
-        return postRepository.findAllBy();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "postId"));
+        return postRepository.findAllWithAuthor(pageable).getContent();
+    }
+
+    public List<PostEntity> findAllPosts(int page) {
+        Pageable pageable = PageRequest.of(page - 1, 10, Sort.by(Sort.Direction.DESC, "postId"));
+        return postRepository.findAllWithAuthor(pageable).getContent();
     }
 
     // pageable
@@ -84,8 +105,13 @@ public class PostService {
 
     // Slice
     public Slice<PostEntity> searchAsSlice(String keyword, int page, int size, String sortBy, String direction) {
-        Sort sort = Sort.by("desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
+        Sort sort = Sort.by("desc".equalsIgnoreCase(direction)
+                ? Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
+
+        if (keyword == null || keyword.isBlank()) {
+            return postRepository.findAllBy(pageable);
+        }
         return postRepository.findSliceByTitleContainingIgnoreCase(keyword, pageable);
     }
 }
