@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign up</title>
+  <link rel="stylesheet" href="/signup//style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>회원가입</h1>
+
+    <!-- 프로필 -->
+    <div class="profile-area">
+      <img id="profilePreview" class="profile-img" />
+      <input type="file" id="profileInput" accept="image/*" />
+      <p id="profileError" class="error"></p>
+    </div>
+
+    <!-- 이메일 -->
+    <label>이메일</label>
+    <input type="text" id="emailInput" />
+    <p id="emailError" class="error"></p>
+
+    <!-- 비밀번호 -->
+    <label>비밀번호</label>
+    <input type="password" id="passwordInput" />
+    <p id="passwordError" class="error"></p>
+
+    <!-- 비밀번호 확인 -->
+    <label>비밀번호 확인</label>
+    <input type="password" id="passwordCheckInput" />
+    <p id="passwordCheckError" class="error"></p>
+
+    <!-- 닉네임 -->
+    <label>닉네임</label>
+    <input type="text" id="nicknameInput" />
+    <p id="nicknameError" class="error"></p>
+
+    <button id="signupBtn" class="disabled" disabled>회원가입</button>
+
+    <p class="goto-login" id="loginLink">로그인 하러가기</p>
+  </div>
+
+  <script src="/signup/script.js"></script>
+</body>
+</html>

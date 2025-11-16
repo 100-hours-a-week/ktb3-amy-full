@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>edit post</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <button id="backBtn" class="back">&lt;</button>
+  <h1>아무 말 대잔치</h1>
+  <img id="profileImage" class="profile" >
+</header>
+
+<h2 class="title">게시글 수정</h2>
+
+<div class="form-box">
+
+  <!-- 제목 -->
+  <div class="input-group">
+    <label>제목*</label>
+    <input id="titleInput" type="text" placeholder="제목을 입력해주세요. (최대 26글자)">
+    <p id="titleError" class="error-text"></p>
+  </div>
+
+  <!-- 내용 -->
+  <div class="input-group">
+    <label>내용*</label>
+    <textarea id="contentInput" placeholder="내용을 입력해주세요."></textarea>
+    <p id="contentError" class="error-text"></p>
+  </div>
+
+  <!-- 이미지 -->
+  <div class="input-group">
+    <label>이미지</label>
+
+    <img id="previewImage" class="preview hidden">
+
+    <input id="imageInput" type="file" accept="image/*">
+    <p id="imageHelper" class="helper-text">* 기존 파일명</p>
+  </div>
+
+  <!-- 수정하기 버튼 -->
+  <button id="submitBtn" class="submit-btn disabled" disabled>수정하기</button>
+
+</div>
+<script src="/common/dropdown.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

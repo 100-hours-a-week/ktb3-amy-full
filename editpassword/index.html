@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>edit password</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 토스트 -->
+<div id="toast" class="toast hidden">수정 완료</div>
+
+<header class="header">
+  <h1>아무 말 대잔치</h1>
+</header>
+
+<h2 class="title">비밀번호 수정</h2>
+
+<div class="form-box">
+
+  <!-- 비밀번호 -->
+  <div class="input-group">
+    <label>새 비밀번호*</label>
+    <input id="passwordInput" type="password" placeholder="새 비밀번호 입력">
+    <p id="passwordError" class="error-text"></p>
+  </div>
+
+  <!-- 비밀번호 확인 -->
+  <div class="input-group">
+    <label>비밀번호 확인*</label>
+    <input id="passwordCheckInput" type="password" placeholder="비밀번호 확인 입력">
+    <p id="passwordCheckError" class="error-text"></p>
+  </div>
+
+  <button id="saveBtn" class="btn disabled" disabled>수정하기</button>
+
+</div>
+<script src="/common/dropdown.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

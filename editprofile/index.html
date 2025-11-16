@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>edit profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 오버레이 -->
+<div id="overlay" class="overlay hidden"></div>
+
+<!-- 회원탈퇴 모달 -->
+<div id="deleteModal" class="modal hidden">
+  <p class="modal-title">회원탈퇴 하시겠습니까?</p>
+  <p class="modal-sub">작성된 게시글과 댓글은 삭제됩니다.</p>
+  <div class="modal-btns">
+    <button id="cancelDeleteBtn" class="cancel-btn">취소</button>
+    <button id="confirmDeleteBtn" class="ok-btn">확인</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast" class="toast hidden">수정 완료</div>
+
+<header class="header">
+  <h1>아무 말 대잔치</h1>
+
+  <div class="profile-wrapper">
+    <img id="profileImage" class="profile" src="/default-profile.png">
+
+    <div id="dropdown" class="dropdown hidden">
+      <div class="dropdown-item" data-link="/editprofile/index.html">회원정보 수정</div>
+      <div class="dropdown-item" data-link="/myposts/index.html">내가 쓴 글</div>
+      <div class="dropdown-item" id="logoutBtn">로그아웃</div>
+    </div>
+  </div>
+</header>
+
+<h2 class="title">회원정보수정</h2>
+
+<div class="form-box">
+
+  <div class="img-section">
+    <p>프로필 사진*</p>
+    <img id="profilePreview" class="big-profile" src="/default-profile.png">
+    <input id="profileInput" type="file" accept="image/*" class="hidden">
+  </div>
+
+  <div class="input-group">
+    <label>이메일</label>
+    <input id="emailInput" type="text" readonly>
+  </div>
+
+  <div class="input-group">
+    <label>닉네임</label>
+    <input id="nicknameInput" type="text">
+    <p id="nicknameError" class="error-text"></p>
+  </div>
+
+  <button id="saveBtn" class="btn disabled" disabled>수정하기</button>
+  <button id="deleteBtn" class="delete-btn">회원 탈퇴</button>
+
+</div>
+<script src="/common/dropdown.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

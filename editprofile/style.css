@@ -1,0 +1,198 @@
+body {
+  font-family: "Pretendard", sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.profile-wrapper {
+  position: relative;
+}
+
+.profile {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 드롭다운 */
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 50px;
+  width: 160px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  overflow: hidden;
+  z-index: 50;
+}
+
+.dropdown-item {
+  padding: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #E9E9E9;
+}
+
+/* 폼 영역 */
+.title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 30px;
+}
+
+.form-box {
+  width: 420px;
+  margin: 20px auto;
+  padding: 25px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.img-section {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.big-profile {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #aaa;
+}
+
+.error-text {
+  font-size: 12px;
+  color: red;
+  height: 14px;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: #ACA0EB;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover:not(.disabled) {
+  background: #7F6AEE;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.delete-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #000;
+}
+
+/* 모달 */
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+}
+
+.modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 320px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 200;
+  text-align: center;
+}
+
+.modal-btns {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.cancel-btn {
+  padding: 8px 20px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+.ok-btn {
+  padding: 8px 20px;
+  background: #ACA0EB;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+/* 토스트 */
+.toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 8px;
+  z-index: 300;
+  opacity: 0;
+  animation: fadein 0.3s forwards;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

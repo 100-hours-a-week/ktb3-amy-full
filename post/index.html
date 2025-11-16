@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>post</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 배경 블러 올 때 막아주는 overlay -->
+<div id="overlay" class="overlay hidden"></div>
+
+<!-- 게시글 삭제 모달 -->
+<div id="deletePostModal" class="modal hidden">
+  <p class="modal-title">게시글을 삭제하시겠습니까?</p>
+  <p class="modal-sub">삭제한 내용은 복구할 수 없습니다.</p>
+  <div class="modal-btns">
+    <button id="cancelDeletePost" class="cancel-btn">취소</button>
+    <button id="confirmDeletePost" class="ok-btn">확인</button>
+  </div>
+</div>
+
+<!-- 댓글 삭제 모달 -->
+<div id="deleteCommentModal" class="modal hidden">
+  <p class="modal-title">댓글을 삭제하시겠습니까?</p>
+  <p class="modal-sub">삭제한 내용은 복구할 수 없습니다.</p>
+  <div class="modal-btns">
+    <button id="cancelDeleteComment" class="cancel-btn">취소</button>
+    <button id="confirmDeleteComment" class="ok-btn">확인</button>
+  </div>
+</div>
+
+<header class="header">
+  <button id="backBtn" class="back">&lt;</button>
+  <h1>아무 말 대잔치</h1>
+  <img id="profileImage" class="profile" src="/default-profile.png">
+</header>
+
+<div id="postContainer" class="post-container"></div>
+<script src="/common/dropdown.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

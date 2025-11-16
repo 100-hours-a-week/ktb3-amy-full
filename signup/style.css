@@ -1,0 +1,103 @@
+/* 기본 설정 */
+body {
+  font-family: "Pretendard", sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.container {
+  margin-top: 40px;
+  width: 360px;
+  text-align: center;
+}
+
+/* 제목 */
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* 프로필 영역 */
+.profile-area {
+  margin-bottom: 20px;
+}
+
+.profile-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #aaa;
+  cursor: pointer;
+}
+
+#profileInput {
+  display: none;
+}
+
+.error {
+  margin-top: 6px;
+  color: red;
+  font-size: 12px;
+}
+
+/* 인풋 */
+label {
+  text-align: left;
+  font-size: 14px;
+  display: block;
+  margin-top: 14px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #aaa;
+  margin-top: 4px;
+}
+
+/* 에러 텍스트 */
+.error {
+  height: 14px;
+  margin-top: 4px;
+  color: red;
+  font-size: 12px;
+}
+
+/* 버튼 */
+#signupBtn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #aca0eb;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#signupBtn:hover:not(.disabled) {
+  background: #7f6aee;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 로그인 이동 */
+.goto-login {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #7f6aee;
+  cursor: pointer;
+}
