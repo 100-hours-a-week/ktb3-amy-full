@@ -1,252 +1,228 @@
-// 프로필 이미지 관련 요소
 const profileInput = document.getElementById("profileInput");
+const profileCircle = document.getElementById("profileCircle");
 const profilePreview = document.getElementById("profilePreview");
+const profileIcon = document.getElementById("profileIcon");
 const profileError = document.getElementById("profileError");
 
-// 입력 관련 요소
-const emailInput = document.getElementById("emailInput");
-const passwordInput = document.getElementById("passwordInput");
-const passwordCheckInput = document.getElementById("passwordCheckInput");
-const nicknameInput = document.getElementById("nicknameInput");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const passwordCheckInput = document.getElementById("passwordCheck");
+const nicknameInput = document.getElementById("nickname");
 
-// 에러 표시 요소
 const emailError = document.getElementById("emailError");
 const passwordError = document.getElementById("passwordError");
 const passwordCheckError = document.getElementById("passwordCheckError");
 const nicknameError = document.getElementById("nicknameError");
 
-// 버튼
 const signupBtn = document.getElementById("signupBtn");
-const loginLink = document.getElementById("loginLink");
+const goLoginBtn = document.getElementById("goLoginBtn");
+const toast = document.getElementById("toast");
 
-let profileImageFile = null;
+let profileBase64 = null;
 
-// -------------------------------------
-// 유효성 검사 함수
-// -------------------------------------
+// API 호출 과다 방지용 debounce
+let emailTimer = null;
+let nicknameTimer = null;
+
+profileCircle.addEventListener("click", () => {
+  profileCircle.classList.add("active");
+  setTimeout(() => profileCircle.classList.remove("active"), 150);
+  profileInput.click();
+});
+
+profileInput.addEventListener("change", () => {
+  const file = profileInput.files[0];
+
+  if (!file) {
+    profileBase64 = null;
+    profilePreview.classList.add("hidden");
+    profileIcon.classList.remove("hidden");
+    profileError.textContent = "*프로필 사진을 추가해주세요.";
+    validateForm();
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    profileBase64 = reader.result;
+    profilePreview.src = profileBase64;
+    profilePreview.classList.remove("hidden");
+    profileIcon.classList.add("hidden");
+    profileError.textContent = "";
+    validateForm();
+  };
+  reader.readAsDataURL(file);
+});
+
 function validateEmail(email) {
-  return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
+  const regex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/;
+  return regex.test(email);
 }
 
 function validatePassword(pw) {
-  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,20}$/.test(pw);
+  const regex =
+    /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_\-\+=<>?]).{8,20}$/;
+  return regex.test(pw);
 }
 
 function validateNickname(nick) {
   if (!nick) return false;
   if (nick.includes(" ")) return false;
-  return nick.length <= 10;
+  if (nick.length > 10) return false;
+  return true;
 }
 
-// -------------------------------------
-// 전체 폼 검증 → 버튼 활성화/비활성화
-// -------------------------------------
-function checkFormValid() {
-  if (
-    profileImageFile &&
-    validateEmail(emailInput.value.trim()) &&
-    validatePassword(passwordInput.value.trim()) &&
-    passwordInput.value.trim() === passwordCheckInput.value.trim() &&
-    validateNickname(nicknameInput.value.trim()) &&
-    !emailError.textContent &&
-    !nicknameError.textContent
-  ) {
-    signupBtn.disabled = false;
-    signupBtn.classList.remove("disabled");
-  } else {
-    signupBtn.disabled = true;
-    signupBtn.classList.add("disabled");
-  }
+async function checkEmailDuplicate(email) {
+  const res = await fetch(
+    `http://localhost:8080/api/v1/users/exists/email?email=${email}`
+  );
+  return await res.json();
 }
 
-// -------------------------------------
-// 프로필 이미지 업로드
-// -------------------------------------
-profileInput.addEventListener("change", () => {
-  const file = profileInput.files[0];
+async function checkNicknameDuplicate(nickname) {
+  const res = await fetch(
+    `http://localhost:8080/api/v1/users/exists/nickname?nickname=${nickname}`
+  );
+  return await res.json();
+}
 
-  if (!file) {
-    profileImageFile = null;
-    profilePreview.src = "./default-profile.png";
+async function validateForm() {
+  let valid = true;
+
+  // 프로필
+  if (!profileBase64) {
     profileError.textContent = "*프로필 사진을 추가해주세요.";
-    checkFormValid();
-    return;
+    valid = false;
+  } else {
+    profileError.textContent = "";
   }
 
-  profileImageFile = file;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    profilePreview.src = reader.result;
-  };
-  reader.readAsDataURL(file);
-
-  profileError.textContent = "";
-  checkFormValid();
-});
-
-// -------------------------------------
-// 이메일 입력 후 blur
-// -------------------------------------
-emailInput.addEventListener("blur", async () => {
+  // 이메일
   const email = emailInput.value.trim();
-
   if (!email) {
     emailError.textContent = "*이메일을 입력해주세요.";
-    checkFormValid();
-    return;
-  }
-
-  if (!validateEmail(email)) {
+    valid = false;
+  } else if (!validateEmail(email)) {
     emailError.textContent =
-      "*올바른 이메일 주소 형식을 입력해주세요. (예: example@example.com)";
-    checkFormValid();
-    return;
+      "*올바른 이메일 형식으로 입력해주세요. (예: example@example.com)";
+    valid = false;
+  } else {
+    // Debounce 후 중복 체크
+    clearTimeout(emailTimer);
+    emailTimer = setTimeout(async () => {
+      if (await checkEmailDuplicate(email)) {
+        emailError.textContent = "*중복된 이메일입니다.";
+        signupBtn.disabled = true;
+        signupBtn.classList.remove("enabled");
+      }
+    }, 350);
+    emailError.textContent = "";
   }
 
-  // 이메일 중복 검사
-  try {
-    const res = await fetch(
-      `http://localhost:8080/api/v1/users/check-email?email=${email}`
-    );
-    const data = await res.json();
-
-    if (data.exists) {
-      emailError.textContent = "*중복된 이메일 입니다.";
-    } else {
-      emailError.textContent = "";
-    }
-  } catch (e) {
-    emailError.textContent = "*이메일 확인 중 오류 발생";
-  }
-
-  checkFormValid();
-});
-
-// -------------------------------------
-// 비밀번호 blur
-// -------------------------------------
-passwordInput.addEventListener("blur", () => {
+  // 비밀번호
   const pw = passwordInput.value.trim();
-  const pwCheck = passwordCheckInput.value.trim();
-
   if (!pw) {
-    passwordError.textContent = "*비밀번호를 입력해주세요";
+    passwordError.textContent = "*비밀번호를 입력해주세요.";
+    valid = false;
   } else if (!validatePassword(pw)) {
     passwordError.textContent =
-      "*비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
-  } else if (pwCheck && pw !== pwCheck) {
-    passwordError.textContent = "*비밀번호가 다릅니다.";
-    passwordCheckError.textContent = "*비밀번호가 다릅니다.";
+      "*8~20자, 대소문자/숫자/특수문자 최소 1개씩 포함";
+    valid = false;
   } else {
     passwordError.textContent = "";
-    if (pw === pwCheck) passwordCheckError.textContent = "";
   }
 
-  checkFormValid();
-});
-
-// -------------------------------------
-// 비밀번호 확인 blur
-// -------------------------------------
-passwordCheckInput.addEventListener("blur", () => {
-  const pw = passwordInput.value.trim();
-  const pwCheck = passwordCheckInput.value.trim();
-
-  if (!pwCheck) {
-    passwordCheckError.textContent = "*비밀번호를 한 번 더 입력해주세요";
-  } else if (pw !== pwCheck) {
-    passwordCheckError.textContent = "*비밀번호가 다릅니다.";
-    if (pw) passwordError.textContent = "*비밀번호가 다릅니다.";
+  // 비밀번호 확인
+  const pw2 = passwordCheckInput.value.trim();
+  if (!pw2) {
+    passwordCheckError.textContent = "*비밀번호를 다시 입력해주세요.";
+    valid = false;
+  } else if (pw !== pw2) {
+    passwordCheckError.textContent = "*비밀번호가 일치하지 않습니다.";
+    valid = false;
   } else {
     passwordCheckError.textContent = "";
-    if (validatePassword(pw)) passwordError.textContent = "";
   }
 
-  checkFormValid();
-});
-
-// -------------------------------------
-// 닉네임 중복 검사
-// -------------------------------------
-nicknameInput.addEventListener("blur", async () => {
+  // 닉네임
   const nick = nicknameInput.value.trim();
-
-  if (!nick) {
-    nicknameError.textContent = "*닉네임을 입력해주세요";
-    checkFormValid();
-    return;
+  if (!validateNickname(nick)) {
+    nicknameError.textContent =
+      "*닉네임은 공백 없이 최대 10자까지 가능합니다.";
+    valid = false;
+  } else {
+    // debounce 중복 체크
+    clearTimeout(nicknameTimer);
+    nicknameTimer = setTimeout(async () => {
+      if (await checkNicknameDuplicate(nick)) {
+        nicknameError.textContent = "*중복된 닉네임입니다.";
+        signupBtn.disabled = true;
+        signupBtn.classList.remove("enabled");
+      }
+    }, 350);
+    nicknameError.textContent = "";
   }
 
-  if (nick.includes(" ")) {
-    nicknameError.textContent = "*띄어쓰기를 없애주세요";
-    checkFormValid();
-    return;
+  // 버튼 활성화
+  signupBtn.disabled = !valid;
+  signupBtn.classList.toggle("enabled", valid);
+}
+
+[emailInput, passwordInput, passwordCheckInput, nicknameInput].forEach(
+  (input) => {
+    input.addEventListener("input", validateForm);
+    input.addEventListener("blur", validateForm);
   }
+);
 
-  if (nick.length > 10) {
-    nicknameError.textContent = "*닉네임은 최대 10자까지 작성 가능합니다.";
-    checkFormValid();
-    return;
-  }
+profileInput.addEventListener("change", validateForm);
 
-  try {
-    const res = await fetch(
-      `http://localhost:8080/api/v1/users/check-nickname?nickname=${nick}`
-    );
-    const data = await res.json();
-
-    if (data.exists) {
-      nicknameError.textContent = "*중복된 닉네임입니다.";
-    } else {
-      nicknameError.textContent = "";
-    }
-  } catch (e) {
-    nicknameError.textContent = "*닉네임 확인 중 오류 발생";
-  }
-
-  checkFormValid();
-});
-
-// -------------------------------------
-// 최종 회원가입
-// -------------------------------------
 signupBtn.addEventListener("click", async () => {
-  if (!profileImageFile) {
-    profileError.textContent = "*프로필 사진을 추가해주세요.";
-    return;
-  }
+  if (signupBtn.disabled) return;
 
-  const formData = new FormData();
-  formData.append("email", emailInput.value.trim());
-  formData.append("password", passwordInput.value.trim());
-  formData.append("nickname", nicknameInput.value.trim());
-  formData.append("profileImage", profileImageFile);
+  signupBtn.textContent = "처리 중...";
+  signupBtn.classList.add("loading");
+
+  const body = {
+    email: emailInput.value.trim(),
+    password: passwordInput.value.trim(),
+    passwordCheck: passwordCheckInput.value.trim(),
+    nickname: nicknameInput.value.trim(),
+    profileImageBase64: profileBase64,
+  };
 
   try {
-    const response = await fetch("http://localhost:8080/api/v1/users/signup", {
+    const res = await fetch("http://localhost:8080/api/v1/auth/signup", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
 
-    const result = await response.json();
-
-    if (result.message === "signup_success") {
-      signupBtn.textContent = "가입 완료!";
-      signupBtn.disabled = true;
-
+    if (res.ok) {
+      signupBtn.textContent = "완료!";
       setTimeout(() => {
         window.location.href = "/login/index.html";
-      }, 2000);
+      }, 1000);
+    } else {
+      showToast();
+      signupBtn.textContent = "회원가입";
     }
   } catch (e) {
-    alert("회원가입 중 오류 발생");
+    showToast();
+    signupBtn.textContent = "회원가입";
   }
+
+  signupBtn.classList.remove("loading");
 });
 
-// -------------------------------------
-// 로그인 이동 버튼
-// -------------------------------------
-loginLink.addEventListener("click", () => {
-  window.location.href = "/login/index.html";
+goLoginBtn.addEventListener("click", () => {
+  goLoginBtn.style.color = "#bca4ff";
+  setTimeout(() => {
+    window.location.href = "/login/index.html";
+  }, 300);
 });
+
+function showToast() {
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2200);
+}

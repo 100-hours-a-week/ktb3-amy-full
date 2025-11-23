@@ -1,171 +1,240 @@
-const profileImage = document.getElementById("profileImage");
-const dropdown = document.getElementById("dropdown");
-const logoutBtn = document.getElementById("logoutBtn");
+const userId = localStorage.getItem("userId");
 
+const profileImg = document.getElementById("profileImg");
+const profileDropdown = document.getElementById("profileDropdown");
 const nicknameInput = document.getElementById("nicknameInput");
 const nicknameError = document.getElementById("nicknameError");
-const emailInput = document.getElementById("emailInput");
-
-const saveBtn = document.getElementById("saveBtn");
-const deleteBtn = document.getElementById("deleteBtn");
-
-const overlay = document.getElementById("overlay");
-const deleteModal = document.getElementById("deleteModal");
-const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
-const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+const updateBtn = document.getElementById("updateBtn");
+const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+const modalOverlay = document.getElementById("modalOverlay");
+const cancelDelete = document.getElementById("cancelDelete");
+const confirmDelete = document.getElementById("confirmDelete");
 const toast = document.getElementById("toast");
+const backBtn = document.getElementById("backBtn");
 
-const profilePreview = document.getElementById("profilePreview");
-const profileInput = document.getElementById("profileInput");
+// ⚠️ 실제 기본 이미지 경로로 수정!!
+const DEFAULT_PROFILE_URL = "/images/default-profile.png";
 
-let userId = localStorage.getItem("userId");
-
-profileImage.addEventListener("click", () => {
-  dropdown.classList.toggle("hidden");
-});
-
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".profile-wrapper")) {
-    dropdown.classList.add("hidden");
-  }
-});
-
-// 드롭다운 이동
-document.querySelectorAll(".dropdown-item").forEach(item => {
-  item.addEventListener("click", () => {
-    const link = item.dataset.link;
-    if (link) window.location.href = link;
-  });
-});
-
-// 로그아웃
-logoutBtn.addEventListener("click", () => {
-  localStorage.clear();
+if (!userId) {
   window.location.href = "/login/index.html";
-});
+}
 
-async function loadUser() {
-  const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`);
-  const user = await res.json();
+// ===========================
+// 프로필 정보 불러오기
+// ===========================
+async function loadProfile() {
+  try {
+    const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`);
 
-  emailInput.value = user.data.email;
-  nicknameInput.value = user.data.nickname;
+    if (!res.ok) throw new Error("로드 실패");
 
-  if (user.data.profileImage) {
-    profilePreview.src = user.data.profileImage;
-    profileImage.src = user.data.profileImage;
+    const data = await res.json();
+
+    let img = data.profileImageUrl || DEFAULT_PROFILE_URL;
+
+    // 서버 상대경로 보정
+    if (img.startsWith("/uploads")) {
+      img = "http://localhost:8080" + img;
+    }
+
+    profileImg.src = img;
+    profileImg.dataset.deleted = "false";
+
+    // 🔥 무한 루프 방지 onerror 수정
+    profileImg.onerror = () => {
+      profileImg.onerror = null; 
+      profileImg.src = DEFAULT_PROFILE_URL;
+    };
+
+    nicknameInput.value = data.nickname;
+
+  } catch (err) {
+    console.error(err);
+    alert("회원 정보를 불러오는 중 문제가 발생했습니다.");
   }
 }
 
-loadUser();
+loadProfile();
 
-profilePreview.addEventListener("click", () => profileInput.click());
-
-profileInput.addEventListener("change", () => {
-  const file = profileInput.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      profilePreview.src = reader.result;
-      profileImage.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  }
+// ===========================
+// 프로필 이미지 드롭다운
+// ===========================
+profileImg.addEventListener("click", (e) => {
+  e.stopPropagation();
+  profileDropdown.classList.toggle("hidden");
 });
+
+// 배경 클릭시 닫기
+document.addEventListener("click", () => {
+  profileDropdown.classList.add("hidden");
+});
+
+// ESC 닫기
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") profileDropdown.classList.add("hidden");
+});
+
+// ===========================
+// 프로필 이미지 변경
+// ===========================
+document.querySelector("[data-value='change']").addEventListener("click", () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.click();
+
+  input.onchange = () => {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      profileImg.src = e.target.result;
+      profileImg.dataset.deleted = "false";
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  profileDropdown.classList.add("hidden");
+});
+
+// ===========================
+// 프로필 이미지 삭제
+// ===========================
+document.querySelector("[data-value='delete']").addEventListener("click", () => {
+  profileImg.src = DEFAULT_PROFILE_URL;
+  profileImg.dataset.deleted = "true";
+  profileImg.onerror = null;
+  profileDropdown.classList.add("hidden");
+});
+
+// ===========================
+// 닉네임 검증
+// ===========================
+let debounceTimer = null;
 
 nicknameInput.addEventListener("input", () => {
-  const nick = nicknameInput.value.trim();
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(validateNickname, 350);
+  disableButton();
+});
 
-  if (!nick) {
-    nicknameError.textContent = "*닉네임을 입력해주세요.";
-    disableSave();
-    return;
-  }
-  if (nick.includes(" ")) {
-    nicknameError.textContent = "*띄어쓰기를 없애주세요.";
-    disableSave();
-    return;
-  }
-  if (nick.length > 10) {
-    nicknameError.textContent = "*닉네임은 최대 10자까지 작성 가능합니다.";
-    disableSave();
-    return;
-  }
+async function validateNickname() {
+  const nickname = nicknameInput.value.trim();
 
   nicknameError.textContent = "";
-  enableSave();
-});
+  nicknameError.classList.add("hidden");
 
-function disableSave() {
-  saveBtn.disabled = true;
-  saveBtn.classList.add("disabled");
-}
+  if (!nickname) return showError("*닉네임을 입력해주세요.");
+  if (nickname.includes(" ")) return showError("*띄어쓰기를 없애주세요.");
+  if (nickname.length > 10) return showError("*닉네임은 최대 10자까지 입력 가능합니다.");
 
-function enableSave() {
-  saveBtn.disabled = false;
-  saveBtn.classList.remove("disabled");
-}
+  try {
+    const res = await fetch(
+      `http://localhost:8080/api/v1/users/exists/nickname?nickname=${nickname}`
+    );
 
-saveBtn.addEventListener("click", async () => {
-  const nick = nicknameInput.value.trim();
+    const exists = await res.json();
 
-  // 중복 체크
-  const resCheck = await fetch(
-    `http://localhost:8080/api/v1/users/check-nickname?nickname=${nick}`
-  );
-  const check = await resCheck.json();
+    if (exists) return showError("*중복된 닉네임입니다.");
 
-  if (check.exists) {
-    nicknameError.textContent = "*중복된 닉네임입니다.";
-    return;
+  } catch (err) {
+    return showError("*닉네임 검증 중 오류가 발생했습니다.");
   }
 
-  // 저장
-  const formData = new FormData();
-  formData.append("nickname", nick);
+  enableButton();
+  return true;
+}
 
-  if (profileInput.files[0]) {
-    formData.append("profileImage", profileInput.files[0]);
+function showError(msg) {
+  nicknameError.textContent = msg;
+  nicknameError.classList.remove("hidden");
+  disableButton();
+  return false;
+}
+
+function enableButton() {
+  updateBtn.disabled = false;
+  updateBtn.classList.add("enabled");
+}
+
+function disableButton() {
+  updateBtn.disabled = true;
+  updateBtn.classList.remove("enabled");
+}
+
+// ===========================
+// 프로필 수정 저장
+// ===========================
+updateBtn.addEventListener("click", async () => {
+  const nickname = nicknameInput.value.trim();
+  if (!(await validateNickname())) return;
+
+  const body = {
+    nickname,
+    deleteImage: profileImg.dataset.deleted === "true",
+    profileImageBase64: profileImg.src.startsWith("data:") ? profileImg.src : null,
+  };
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error("수정 실패");
+
+    showToast();
+
+  } catch (err) {
+    alert("정보 수정 중 오류가 발생했습니다.");
   }
-
-  await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
-    method: "PUT",
-    body: formData,
-  });
-
-  showToast();
 });
 
+// ===========================
+// 토스트
+// ===========================
 function showToast() {
   toast.classList.remove("hidden");
+  toast.classList.add("show");
 
   setTimeout(() => {
-    toast.classList.add("hidden");
+    toast.classList.remove("show");
+    setTimeout(() => toast.classList.add("hidden"), 300);
   }, 2000);
 }
 
-deleteBtn.addEventListener("click", () => {
-  overlay.classList.remove("hidden");
-  deleteModal.classList.remove("hidden");
-  document.body.style.overflow = "hidden";
+// ===========================
+// 회원 탈퇴
+// ===========================
+deleteAccountBtn.addEventListener("click", () => {
+  modalOverlay.classList.remove("hidden");
 });
 
-cancelDeleteBtn.addEventListener("click", closeModal);
+cancelDelete.addEventListener("click", () => {
+  modalOverlay.classList.add("hidden");
+});
 
-async function confirmDelete() {
-  await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
-    method: "DELETE"
-  });
+confirmDelete.addEventListener("click", async () => {
+  try {
+    await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
+      method: "DELETE",
+    });
 
-  localStorage.clear();
-  closeModal();
-  window.location.href = "/login/index.html";
-}
+    localStorage.clear();
+    alert("회원 탈퇴가 완료되었습니다.");
+    location.href = "/login/index.html";
 
-confirmDeleteBtn.addEventListener("click", confirmDelete);
+  } catch (err) {
+    alert("회원 탈퇴 중 오류 발생");
+  }
+});
 
-function closeModal() {
-  overlay.classList.add("hidden");
-  deleteModal.classList.add("hidden");
-  document.body.style.overflow = "auto";
-}
+// ===========================
+// 뒤로가기
+// ===========================
+backBtn.addEventListener("click", () => {
+  window.location.href = "/posts/index.html";
+});

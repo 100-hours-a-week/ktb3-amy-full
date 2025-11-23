@@ -1,213 +1,119 @@
-// --- 요소 가져오기 ---
-const profileImage = document.getElementById("profileImage");
-const dropdown = document.getElementById("dropdown");
-const logoutBtn = document.getElementById("logoutBtn");
+const postId = new URLSearchParams(location.search).get("id");
 
-const nicknameInput = document.getElementById("nicknameInput");
-const nicknameError = document.getElementById("nicknameError");
-const emailInput = document.getElementById("emailInput");
+const titleInput = document.getElementById("titleInput");
+const contentInput = document.getElementById("contentInput");
+const imageInput = document.getElementById("imageInput");
+const imagePreview = document.getElementById("imagePreview");
+const updateBtn = document.getElementById("updateBtn");
 
-const saveBtn = document.getElementById("saveBtn");
-const deleteBtn = document.getElementById("deleteBtn");
+const titleError = document.getElementById("titleError");
+const contentError = document.getElementById("contentError");
+const backBtn = document.getElementById("backBtn");
 
-const overlay = document.getElementById("overlay");
-const deleteModal = document.getElementById("deleteModal");
-const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
-const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-const toast = document.getElementById("toast");
+let base64Image = null;          // 새로 업로드한 이미지
+let originalImageUrl = null;     // 기존 이미지 URL
 
-const profilePreview = document.getElementById("profilePreview");
-const profileInput = document.getElementById("profileInput");
+async function loadPost() {
+  try {
+    const res = await fetch(`http://localhost:8080/api/v1/posts/${postId}`);
+    if (!res.ok) throw new Error("게시글 로드 실패");
+    const data = await res.json();
 
-let userId = localStorage.getItem("userId");
+    // 기존 글 정보 주입
+    titleInput.value = data.title;
+    contentInput.value = data.content;
 
-
-// =====================
-//   드롭다운 안전 패치
-// =====================
-if (profileImage) {
-  profileImage.addEventListener("click", (e) => {
-    e.stopPropagation(); // 버블링 막기
-    dropdown.classList.toggle("hidden");
-  });
-}
-
-document.addEventListener("click", (e) => {
-  if (
-    !profileImage?.contains(e.target) &&
-    !dropdown?.contains(e.target)
-  ) {
-    dropdown?.classList.add("hidden");
-  }
-});
-
-
-// =====================
-//   드롭다운 항목 이동
-// =====================
-document.querySelectorAll(".dropdown-item").forEach(item => {
-  item.addEventListener("click", () => {
-    const link = item.dataset.link;
-    if (link) window.location.href = link;
-  });
-});
-
-
-// =====================
-//   로그아웃
-// =====================
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    localStorage.clear();
-    window.location.href = "/login/index.html";
-  });
-}
-
-
-// =====================
-//   사용자 정보 로드
-// =====================
-async function loadUser() {
-  if (!userId) return;
-
-  const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`);
-  const data = await res.json();
-
-  if (!data.data) return;
-
-  emailInput.value = data.data.email;
-  nicknameInput.value = data.data.nickname;
-
-  if (data.data.profileImage) {
-    profilePreview.src = data.data.profileImage;
-    profileImage.src = data.data.profileImage;
-  }
-
-  enableSave();
-}
-
-loadUser();
-
-
-// =====================
-//   프로필 사진 변경
-// =====================
-if (profilePreview && profileInput) {
-  profilePreview.addEventListener("click", () => profileInput.click());
-
-  profileInput.addEventListener("change", () => {
-    const file = profileInput.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        profilePreview.src = reader.result;
-        profileImage.src = reader.result;
-      };
-      reader.readAsDataURL(file);
+    if (data.imageUrl) {
+      originalImageUrl = data.imageUrl;
+      imagePreview.src = data.imageUrl;
+      imagePreview.classList.remove("hidden");
     }
-  });
+
+    validateForm();
+  } catch (err) {
+    console.error(err);
+    alert("게시글 정보를 불러오는 중 오류가 발생했습니다.");
+  }
 }
 
+loadPost();
 
-// =====================
-//   닉네임 입력 체크
-// =====================
-nicknameInput?.addEventListener("input", () => {
-  const nick = nicknameInput.value.trim();
-
-  if (!nick) {
-    nicknameError.textContent = "*닉네임을 입력해주세요.";
-    disableSave();
-    return;
+titleInput.addEventListener("input", () => {
+  if (titleInput.value.length > 26) {
+    titleError.classList.remove("hidden");
+  } else {
+    titleError.classList.add("hidden");
   }
-  if (nick.includes(" ")) {
-    nicknameError.textContent = "*띄어쓰기를 없애주세요.";
-    disableSave();
-    return;
-  }
-  if (nick.length > 10) {
-    nicknameError.textContent = "*닉네임은 최대 10자까지 작성 가능합니다.";
-    disableSave();
-    return;
-  }
-
-  nicknameError.textContent = "";
-  enableSave();
+  validateForm();
 });
 
-function disableSave() {
-  saveBtn.disabled = true;
-  saveBtn.classList.add("disabled");
-}
-
-function enableSave() {
-  saveBtn.disabled = false;
-  saveBtn.classList.remove("disabled");
-}
-
-
-// =====================
-//   저장하기
-// =====================
-saveBtn?.addEventListener("click", async () => {
-  const nick = nicknameInput.value.trim();
-
-  // 중복 체크
-  const resCheck = await fetch(
-    `http://localhost:8080/api/v1/users/check-nickname?nickname=${nick}`
-  );
-  const check = await resCheck.json();
-
-  if (check.exists) {
-    nicknameError.textContent = "*중복된 닉네임입니다.";
-    return;
+contentInput.addEventListener("input", () => {
+  if (!contentInput.value.trim()) {
+    contentError.classList.remove("hidden");
+  } else {
+    contentError.classList.add("hidden");
   }
+  validateForm();
+});
 
-  // 저장(formData)
-  const formData = new FormData();
-  formData.append("nickname", nick);
+imageInput.addEventListener("change", () => {
+  const file = imageInput.files[0];
+  if (!file) return;
 
-  if (profileInput.files[0]) {
-    formData.append("profileImage", profileInput.files[0]);
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    base64Image = e.target.result;
+    imagePreview.src = base64Image;
+    imagePreview.classList.remove("hidden");
+  };
+  reader.readAsDataURL(file);
+});
+
+function validateForm() {
+  const titleValid =
+    titleInput.value.trim().length > 0 && titleInput.value.length <= 26;
+
+  const contentValid = contentInput.value.trim().length > 0;
+
+  const formValid = titleValid && contentValid;
+
+  updateBtn.disabled = !formValid;
+  updateBtn.classList.toggle("enabled", formValid);
+
+  return formValid;
+}
+
+updateBtn.addEventListener("click", async () => {
+  if (!validateForm()) return alert("제목과 내용을 올바르게 입력해주세요.");
+
+  const title = titleInput.value.trim();
+  const content = contentInput.value.trim();
+
+  const body = {
+    title,
+    content,
+    imageBase64: base64Image, // 새 이미지 업로드 시 → Base64
+    originalImageUrl: originalImageUrl, 
+  };
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/v1/posts/${postId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error("수정 요청 실패");
+
+    alert("게시글이 성공적으로 수정되었습니다!");
+    location.href = `/post/index.html?id=${postId}`;
+
+  } catch (err) {
+    console.error(err);
+    alert("수정 중 오류가 발생했습니다. 다시 시도해주세요.");
   }
-
-  await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
-    method: "PUT",
-    body: formData,
-  });
-
-  showToast();
 });
 
-function showToast() {
-  toast.classList.remove("hidden");
-  setTimeout(() => toast.classList.add("hidden"), 2000);
-}
-
-
-// =====================
-//   회원 탈퇴
-// =====================
-deleteBtn?.addEventListener("click", () => {
-  overlay.classList.remove("hidden");
-  deleteModal.classList.remove("hidden");
-  document.body.style.overflow = "hidden";
+backBtn.addEventListener("click", () => {
+  history.back();
 });
-
-cancelDeleteBtn?.addEventListener("click", closeModal);
-
-confirmDeleteBtn?.addEventListener("click", async () => {
-  await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
-    method: "DELETE",
-  });
-
-  localStorage.clear();
-  closeModal();
-  window.location.href = "/login/index.html";
-});
-
-function closeModal() {
-  overlay.classList.add("hidden");
-  deleteModal.classList.add("hidden");
-  document.body.style.overflow = "auto";
-}

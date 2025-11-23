@@ -1,27 +1,54 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
   <title>Posts</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header class="header">
-  <h1>아무 말 대잔치</h1>
-  <img id="profileImage" class="profile" alt="profile">
-</header>
+  <!-- 헤더 -->
+  <header class="header fade-in">
+    <h1 class="header-title neon-text">게시글 목록</h1>
 
-<div class="welcome-box">
-  <p>안녕하세요,</p>
-  <p><strong>아무 말 대잔치 게시판</strong> 입니다.</p>
-</div>
+    <div class="header-right">
+      
+      <!-- 프로필 영역 -->
+      <div class="profile-area glow-border">
+        <img 
+          id="headerProfileImg" 
+          class="profile-img" 
+          src="/images/default-profile.png" 
+          alt="profile"
+        />
 
-<button id="createPostBtn" class="create-btn">게시글 작성</button>
+        <!-- 프로필 드롭다운 -->
+        <div id="headerDropdown" class="profile-dropdown hidden dropdown-glass">
+          <div data-action="edit-profile" class="dropdown-item">회원정보 수정</div>
+          <div data-action="edit-password" class="dropdown-item">비밀번호 수정</div>
+          <div data-action="logout" class="dropdown-item logout">로그아웃</div>
+        </div>
+      </div>
 
-<div id="postContainer" class="post-container"></div>
-<script src="/common/dropdown.js"></script>
-<script src="script.js"></script>
+      <!-- 글쓰기 버튼 -->
+      <button id="createBtn" class="create-btn neon-hover">게시글 작성</button>
+    </div>
+  </header>
+
+  <!-- 게시글 목록 -->
+  <main id="postContainer" class="post-container fade-in"></main>
+
+  <!-- 로딩 메시지 -->
+  <div id="loading" class="loading hidden">불러오는 중...</div>
+
+  <!-- 끝 메시지 -->
+  <div id="endMessage" class="end-message hidden">더 불러올 게시글이 없습니다</div>
+
+  <!-- 공통 헤더 스크립트 -->
+  <script src="/common/header.js"></script>
+
+  <!-- 게시글 목록 스크립트 -->
+  <script src="script.js"></script>
+
 </body>
 </html>

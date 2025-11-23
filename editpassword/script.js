@@ -1,93 +1,138 @@
+const userId = localStorage.getItem("userId");
+
+// ==================================================
+//                뒤로가기 버튼 (존재할 때만 실행)
+// ==================================================
+const backBtn = document.getElementById("backBtn");
+if (backBtn) {
+  backBtn.addEventListener("click", () => {
+    window.location.href = "/editprofile/index.html";
+  });
+}
+
 const passwordInput = document.getElementById("passwordInput");
 const passwordCheckInput = document.getElementById("passwordCheckInput");
 
 const passwordError = document.getElementById("passwordError");
 const passwordCheckError = document.getElementById("passwordCheckError");
 
-const saveBtn = document.getElementById("saveBtn");
+const updateBtn = document.getElementById("updateBtn");
 const toast = document.getElementById("toast");
 
-let userId = localStorage.getItem("userId");
 
+// ==================================================
+//          1. 비밀번호 유효성 검사 함수
+// ==================================================
 function validatePassword(pw) {
   const regex =
     /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_\-\+=<>?]).{8,20}$/;
   return regex.test(pw);
 }
 
+// input 이벤트
 passwordInput.addEventListener("input", validateForm);
 passwordCheckInput.addEventListener("input", validateForm);
 
+
+// ==================================================
+//          2. 전체 폼 검증 + 버튼 활성화
+// ==================================================
 function validateForm() {
   const pw = passwordInput.value.trim();
   const pw2 = passwordCheckInput.value.trim();
 
   let valid = true;
 
+  // --- 비밀번호 검증 ---
   if (!pw) {
-    passwordError.textContent = "*비밀번호를 입력해주세요";
+    passwordError.textContent = "*비밀번호를 입력해주세요.";
+    passwordError.classList.remove("hidden");
     valid = false;
-  } 
-  else if (!validatePassword(pw)) {
+  } else if (!validatePassword(pw)) {
     passwordError.textContent =
-      "*비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
+      "*8~20자 / 대문자, 소문자, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다.";
+    passwordError.classList.remove("hidden");
     valid = false;
-  } 
-  else if (pw2 && pw !== pw2) {
-    // 비밀번호는 입력했는데 확인 비밀번호와 다를 때
-    passwordError.textContent = "*비밀번호 확인과 다릅니다.";
-    valid = false;
-  }
-  else {
-    passwordError.textContent = "";
-  }
-
-  if (!pw2) {
-    passwordCheckError.textContent = "*비밀번호를 한 번 더 입력해주세요";
-    valid = false;
-  } 
-  else if (pw !== pw2) {
-    passwordCheckError.textContent = "*비밀번호와 다릅니다.";
-    valid = false;
-  }
-  else {
-    passwordCheckError.textContent = "";
-  }
-
-  if (valid) {
-    saveBtn.disabled = false;
-    saveBtn.classList.remove("disabled");
   } else {
-    saveBtn.disabled = true;
-    saveBtn.classList.add("disabled");
+    passwordError.classList.add("hidden");
   }
+
+  // --- 비밀번호 확인 검증 ---
+  if (!pw2) {
+    passwordCheckError.textContent = "*비밀번호를 한 번 더 입력해주세요.";
+    passwordCheckError.classList.remove("hidden");
+    valid = false;
+  } else if (pw !== pw2) {
+    passwordCheckError.textContent = "*비밀번호 확인이 일치하지 않습니다.";
+    passwordCheckError.classList.remove("hidden");
+    valid = false;
+  } else {
+    passwordCheckError.classList.add("hidden");
+  }
+
+  // --- 버튼 활성화 ---
+  updateBtn.disabled = !valid;
+  updateBtn.classList.toggle("enabled", valid);
 }
 
-saveBtn.addEventListener("click", async () => {
-  const pw = passwordInput.value.trim();
 
-  const body = JSON.stringify({
-    password: pw
-  });
+// ==================================================
+//              3. 수정하기(PATCH)
+// ==================================================
+updateBtn.addEventListener("click", async () => {
+  const pw = passwordInput.value.trim();
+  const pw2 = passwordCheckInput.value.trim();
+
+  const body = {
+    newPassword: pw,
+    newPasswordCheck: pw2,
+  };
 
   try {
-    await fetch(`http://localhost:8080/api/v1/users/${userId}/password`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body
-    });
+    const res = await fetch(
+      `http://localhost:8080/api/v1/users/${userId}/password`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }
+    );
 
+    if (!res.ok) {
+      alert("비밀번호 변경 실패! 다시 시도해주세요.");
+      return;
+    }
+
+    // 성공
     showToast();
 
+    // 입력 초기화
+    passwordInput.value = "";
+    passwordCheckInput.value = "";
+    updateBtn.disabled = true;
+    updateBtn.classList.remove("enabled");
+
+    // 돌아가기
+    setTimeout(() => {
+      window.location.href = "/editprofile/index.html";
+    }, 1200);
+
   } catch (err) {
-    alert("비밀번호 수정 중 오류가 발생했습니다.");
+    console.error(err);
+    alert("서버 오류가 발생했습니다.");
   }
 });
 
+
+// ==================================================
+//                4. 토스트 메시지
+// ==================================================
 function showToast() {
   toast.classList.remove("hidden");
+  toast.classList.add("show");
 
   setTimeout(() => {
-    toast.classList.add("hidden");
-  }, 2000);
+    toast.classList.remove("show");
+    setTimeout(() => toast.classList.add("hidden"), 300);
+  }, 1500);
 }

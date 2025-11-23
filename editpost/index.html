@@ -1,52 +1,105 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>edit post</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Edit Post</title>
+
+  <!-- 공통 헤더 스타일 -->
+  <link rel="stylesheet" href="/common/header.css" />
+
+  <!-- 페이지 전용 스타일 -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header class="header">
-  <button id="backBtn" class="back">&lt;</button>
-  <h1>아무 말 대잔치</h1>
-  <img id="profileImage" class="profile" >
-</header>
+  <!-- MoveCrew 공통 헤더 -->
+  <header class="global-header header-glass">
 
-<h2 class="title">게시글 수정</h2>
+    <!-- MoveCrew 로고 -->
+    <h1 class="logo neon-logo">MoveCrew</h1>
 
-<div class="form-box">
+    <div class="profile-area">
+      <img 
+        id="headerProfileImg" 
+        class="profile-img profile-glow" 
+        src="/assets/profile-default.png"
+        alt="profile"
+        draggable="false"
+      />
 
-  <!-- 제목 -->
-  <div class="input-group">
-    <label>제목*</label>
-    <input id="titleInput" type="text" placeholder="제목을 입력해주세요. (최대 26글자)">
-    <p id="titleError" class="error-text"></p>
-  </div>
+      <!-- 드롭다운 -->
+      <div id="headerDropdown" class="profile-dropdown dropdown-glass hidden">
+        <div class="dropdown-item" data-action="edit-profile">회원정보 수정</div>
+        <div class="dropdown-item" data-action="edit-password">비밀번호 수정</div>
+        <div class="dropdown-item logout-item" data-action="logout">로그아웃</div>
+      </div>
+    </div>
 
-  <!-- 내용 -->
-  <div class="input-group">
-    <label>내용*</label>
-    <textarea id="contentInput" placeholder="내용을 입력해주세요."></textarea>
-    <p id="contentError" class="error-text"></p>
-  </div>
+  </header>
 
-  <!-- 이미지 -->
-  <div class="input-group">
-    <label>이미지</label>
 
-    <img id="previewImage" class="preview hidden">
+  <!-- 메인 컨텐츠 -->
+  <main class="fade-in">
 
-    <input id="imageInput" type="file" accept="image/*">
-    <p id="imageHelper" class="helper-text">* 기존 파일명</p>
-  </div>
+    <button id="backBtn" class="back-btn">← 뒤로가기</button>
 
-  <!-- 수정하기 버튼 -->
-  <button id="submitBtn" class="submit-btn disabled" disabled>수정하기</button>
+    <h2 class="page-title">게시글 수정</h2>
 
-</div>
-<script src="/common/dropdown.js"></script>
-<script src="script.js"></script>
+    <!-- 제목 -->
+    <div class="form-group">
+      <label for="titleInput" class="input-label">제목</label>
+      <input 
+        id="titleInput" 
+        type="text" 
+        maxlength="26" 
+        placeholder="제목을 입력하세요"
+        class="input-field"
+      />
+      <small id="titleError" class="error hidden">
+        제목은 최대 26자까지 입력 가능합니다.
+      </small>
+    </div>
+
+    <!-- 내용 -->
+    <div class="form-group">
+      <label for="contentInput" class="input-label">내용</label>
+      <textarea 
+        id="contentInput" 
+        class="content-area"
+        placeholder="내용을 입력하세요"
+      ></textarea>
+      <small id="contentError" class="error hidden">
+        내용을 입력해주세요.
+      </small>
+    </div>
+
+    <!-- 이미지 업로드 -->
+    <div class="form-group">
+      <label class="input-label">이미지</label>
+
+      <img id="imagePreview" class="preview-image hidden" />
+
+      <label class="upload-label" for="imageInput">이미지 선택</label>
+      <input 
+        id="imageInput" 
+        type="file" 
+        accept="image/*"
+        class="file-input"
+      />
+    </div>
+
+    <!-- 수정하기 버튼 -->
+    <button id="updateBtn" class="update-btn" disabled>
+      수정하기
+    </button>
+
+  </main>
+
+  <!-- 공통 헤더 스크립트 -->
+  <script src="/common/header.js"></script>
+
+  <!-- 페이지 전용 스크립트 -->
+  <script src="script.js"></script>
+
 </body>
 </html>

@@ -2,47 +2,66 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign up</title>
-  <link rel="stylesheet" href="/signup//style.css" />
+  <title>Sign in</title>
+  <link rel="stylesheet" href="/signup/style.css" />
 </head>
 <body>
 
-  <div class="container">
-    <h1>회원가입</h1>
+  <div class="container card-glass fade-in">
 
-    <!-- 프로필 -->
-    <div class="profile-area">
-      <img id="profilePreview" class="profile-img" />
-      <input type="file" id="profileInput" accept="image/*" />
-      <p id="profileError" class="error"></p>
+    <!-- 타이틀 -->
+    <h1 class="title neon-text">Sign in</h1>
+
+    <!-- 프로필 이미지 -->
+    <div class="profile-wrapper">
+      <div id="profileCircle" class="profile-circle glow-hover">
+        <img id="profilePreview" class="profile-preview hidden" />
+        <span id="profileIcon" class="profile-icon">+</span>
+      </div>
+
+      <p id="profileError" class="error-text fixed-height"></p>
+      <input id="profileInput" type="file" accept="image/*" hidden />
     </div>
 
     <!-- 이메일 -->
-    <label>이메일</label>
-    <input type="text" id="emailInput" />
-    <p id="emailError" class="error"></p>
+    <div class="input-group">
+      <label for="email">이메일</label>
+      <input id="email" type="text" placeholder="example@example.com" class="input-glass" />
+      <p id="emailError" class="error-text fixed-height"></p>
+    </div>
 
     <!-- 비밀번호 -->
-    <label>비밀번호</label>
-    <input type="password" id="passwordInput" />
-    <p id="passwordError" class="error"></p>
+    <div class="input-group">
+      <label for="password">비밀번호</label>
+      <input id="password" type="password" class="input-glass" />
+      <p id="passwordError" class="error-text fixed-height"></p>
+    </div>
 
     <!-- 비밀번호 확인 -->
-    <label>비밀번호 확인</label>
-    <input type="password" id="passwordCheckInput" />
-    <p id="passwordCheckError" class="error"></p>
+    <div class="input-group">
+      <label for="passwordCheck">비밀번호 확인</label>
+      <input id="passwordCheck" type="password" class="input-glass" />
+      <p id="passwordCheckError" class="error-text fixed-height"></p>
+    </div>
 
     <!-- 닉네임 -->
-    <label>닉네임</label>
-    <input type="text" id="nicknameInput" />
-    <p id="nicknameError" class="error"></p>
+    <div class="input-group">
+      <label for="nickname">닉네임</label>
+      <input id="nickname" type="text" class="input-glass" />
+      <p id="nicknameError" class="error-text fixed-height"></p>
+    </div>
 
-    <button id="signupBtn" class="disabled" disabled>회원가입</button>
+    <!-- 회원가입 버튼 -->
+    <button id="signupBtn" class="btn signup-btn neon-hover" disabled>회원가입</button>
 
-    <p class="goto-login" id="loginLink">로그인 하러가기</p>
+    <!-- 로그인 이동 -->
+    <button id="goLoginBtn" class="link-btn glow-text">이미 계정이 있으신가요? 로그인</button>
+
+    <!-- 토스트 메시지 -->
+    <div id="toast" class="toast hidden">회원가입 실패</div>
+
   </div>
 
-  <script src="/signup/script.js"></script>
+  <script src="./script.js"></script>
 </body>
 </html>

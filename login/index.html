@@ -2,33 +2,49 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Log in</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/login/style.css" />
 </head>
 <body>
 
-  <h1 class="title">로그인</h1>
-
-  <div class="login-box">
-
-    <div class="input-group">
-      <label>이메일</label>
-      <input id="email" type="text" placeholder="이메일을 입력해주세요" />
-      <p class="error-text" id="emailError"></p>
-    </div>
-
-    <div class="input-group">
-      <label>비밀번호</label>
-      <input id="password" type="password" placeholder="비밀번호를 입력해주세요" />
-      <p class="error-text" id="passwordError"></p>
-    </div>
-
-    <button id="loginBtn" class="btn">로그인</button>
-
-    <button id="signupBtn" class="link-btn">회원가입</button>
+  <div class="brand-box fade-in">
+    <h1 class="brand-title neon-text">MoveCrew</h1>
+    <p class="brand-desc">
+      몸을 움직이는 운동 · 댄스 · 취미로 함께 성장하는<br>
+      당신만의 크루 커뮤니티 플랫폼
+    </p>
   </div>
 
-  <script src="script.js"></script>
+  <!-- 로그인 박스 -->
+  <div class="container fade-in">
+
+    <h1 class="title">Log in</h1>
+
+    <!-- 이메일 입력 -->
+    <div class="input-group">
+      <label for="email">이메일</label>
+      <input id="email" type="text" placeholder="example@example.com" />
+      <p id="emailError" class="error-text"></p>
+    </div>
+
+    <!-- 비밀번호 입력 -->
+    <div class="input-group">
+      <label for="password">비밀번호</label>
+      <input id="password" type="password" placeholder="비밀번호를 입력해주세요" />
+      <p id="passwordError" class="error-text"></p>
+    </div>
+
+    <!-- 로그인 버튼 -->
+    <button id="loginBtn" class="btn" disabled>로그인</button>
+
+    <!-- 회원가입 이동 -->
+    <button id="signupBtn" class="link-btn">회원가입</button>
+
+    <!-- 토스트 메시지 -->
+    <div id="toast" class="toast">로그인 실패: 아이디 또는 비밀번호를 확인해주세요.</div>
+
+  </div>
+
+  <script src="/login/script.js"></script>
 </body>
 </html>

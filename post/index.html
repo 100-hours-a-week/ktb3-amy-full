@@ -1,44 +1,89 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>post</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>게시글 상세</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- 배경 블러 올 때 막아주는 overlay -->
-<div id="overlay" class="overlay hidden"></div>
+  <!-- 모달 오버레이 -->
+  <div id="modalOverlay" class="modal-overlay hidden"></div>
 
-<!-- 게시글 삭제 모달 -->
-<div id="deletePostModal" class="modal hidden">
-  <p class="modal-title">게시글을 삭제하시겠습니까?</p>
-  <p class="modal-sub">삭제한 내용은 복구할 수 없습니다.</p>
-  <div class="modal-btns">
-    <button id="cancelDeletePost" class="cancel-btn">취소</button>
-    <button id="confirmDeletePost" class="ok-btn">확인</button>
+  <!-- 삭제 모달 -->
+  <div id="deleteModal" class="modal hidden modal-glass">
+      <p class="modal-text">정말 삭제하시겠습니까?</p>
+      <div class="modal-btns">
+          <button id="modalCancelBtn" class="modal-btn cancel">취소</button>
+          <button id="modalConfirmBtn" class="modal-btn delete">삭제</button>
+      </div>
   </div>
-</div>
 
-<!-- 댓글 삭제 모달 -->
-<div id="deleteCommentModal" class="modal hidden">
-  <p class="modal-title">댓글을 삭제하시겠습니까?</p>
-  <p class="modal-sub">삭제한 내용은 복구할 수 없습니다.</p>
-  <div class="modal-btns">
-    <button id="cancelDeleteComment" class="cancel-btn">취소</button>
-    <button id="confirmDeleteComment" class="ok-btn">확인</button>
-  </div>
-</div>
+  <!-- 헤더 -->
+  <header class="header-glass fade-in">
+    <button id="backBtn" class="back-btn neon-hover">← 목록</button>
 
-<header class="header">
-  <button id="backBtn" class="back">&lt;</button>
-  <h1>아무 말 대잔치</h1>
-  <img id="profileImage" class="profile" src="/default-profile.png">
-</header>
+    <div class="post-actions">
+      <button id="editBtn" class="edit-btn action-btn neon-hover">수정</button>
+      <button id="deleteBtn" class="delete-btn action-btn neon-hover">삭제</button>
+    </div>
+  </header>
 
-<div id="postContainer" class="post-container"></div>
-<script src="/common/dropdown.js"></script>
-<script src="script.js"></script>
+  <!-- 게시글 내용 -->
+  <main class="post-wrapper fade-in">
+
+    <!-- 제목 -->
+    <h2 id="postTitle" class="post-title neon-text"></h2>
+
+    <!-- 내용 -->
+    <p id="postContent" class="content"></p>
+
+    <!-- 이미지 -->
+    <img 
+      id="postImage" 
+      class="post-image hidden image-glow"
+      alt="post image"
+    />
+
+    <!-- 통계 영역 -->
+    <div class="stats stats-glass">
+      <span>조회수: <span id="viewCount"></span></span>
+      <span>좋아요: <span id="likeCount"></span></span>
+      <span>댓글: <span id="commentCount"></span></span>
+    </div>
+
+    <!-- 좋아요 버튼 -->
+    <button id="likeBtn" class="like-btn disabled neon-hover">
+      좋아요 👍
+    </button>
+
+    <!-- 댓글 영역 -->
+    <section class="comment-section">
+      <h3 class="comment-title neon-text-small">댓글</h3>
+
+      <!-- 댓글 입력 -->
+      <textarea 
+        id="commentInput" 
+        placeholder="댓글을 입력하세요"
+        class="comment-textarea input-glass"
+      ></textarea>
+
+      <button 
+        id="commentSubmitBtn" 
+        class="comment-submit-btn neon-hover" 
+        disabled
+      >
+        댓글 등록
+      </button>
+
+      <!-- 댓글 목록 -->
+      <ul id="commentList" class="comment-list"></ul>
+    </section>
+
+  </main>
+
+  <!-- 스크립트 -->
+  <script src="script.js"></script>
+  <script src="/common/dropdown.js"></script>
 </body>
 </html>
