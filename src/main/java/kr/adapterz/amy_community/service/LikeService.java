@@ -1,63 +1,46 @@
 package kr.adapterz.amy_community.service;
 
-import kr.adapterz.amy_community.entity.PostEntity;
-import kr.adapterz.amy_community.entity.PostLikeEntity;
-import kr.adapterz.amy_community.entity.UserEntity;
-import kr.adapterz.amy_community.repository.PostLikeRepository;
+import kr.adapterz.amy_community.entity.Like;
+import kr.adapterz.amy_community.entity.Post;
+import kr.adapterz.amy_community.entity.User;
+import kr.adapterz.amy_community.repository.LikeRepository;
 import kr.adapterz.amy_community.repository.PostRepository;
 import kr.adapterz.amy_community.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class LikeService {
 
-    private final PostLikeRepository postLikeRepository;
+    private final LikeRepository likeRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // 좋아요 토글
-    public Map<String, Object> toggle(Long postId, Long userId) {
+    public boolean toggleLike(Long userId, Long postId) {
 
-        PostEntity post = postRepository.findById(postId).orElse(null);
-        UserEntity user = userRepository.findById(userId).orElse(null);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("user not found"));
 
-        if (post == null || user == null) {
-            return Map.of("message", "fail");
-        }
-
-        PostLikeEntity like =
-                postLikeRepository.findByPostIdAndUserId(postId, userId);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("post not found"));
 
         // 이미 좋아요 눌렀다면 → 취소
-        if (like != null) {
-            postLikeRepository.delete(like);
-            post.setLikes(post.getLikes() - 1);
-            postRepository.save(post);
+        if (likeRepository.existsByUser_IdAndPost_Id(userId, postId)) {
+            likeRepository.deleteByUser_IdAndPost_Id(userId, postId);
 
-            return Map.of(
-                    "message", "like_off",
-                    "data", Map.of("likes", post.getLikes(), "liked", false)
-            );
+            // 최신 좋아요 개수 반영
+            post.setLikeCount((int) likeRepository.countByPost_Id(postId));
+            return false; // 좋아요 OFF
         }
 
-        // 좋아요 추가
-        PostLikeEntity newLike = new PostLikeEntity();
-        newLike.setPost(post);
-        newLike.setUser(user);
-        postLikeRepository.save(newLike);
+        // 누르지 않았다면 → 좋아요 추가
+        likeRepository.save(new Like(user, post));
 
-        post.setLikes(post.getLikes() + 1);
-        postRepository.save(post);
-
-        return Map.of(
-                "message", "like_on",
-                "data", Map.of("likes", post.getLikes(), "liked", true)
-        );
+        // 최신 좋아요 개수 반영
+        post.setLikeCount((int) likeRepository.countByPost_Id(postId));
+        return true; // 좋아요 ON
     }
 }

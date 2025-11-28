@@ -1,58 +1,111 @@
 package kr.adapterz.amy_community.controller;
 
-import kr.adapterz.amy_community.dto.comment.CommentResponse;
-import kr.adapterz.amy_community.dto.comment.CreateCommentRequest;
-import kr.adapterz.amy_community.dto.comment.UpdateCommentRequest;
-import kr.adapterz.amy_community.service.CommentService;
+import jakarta.validation.Valid;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import kr.adapterz.amy_community.entity.Comment;
+import kr.adapterz.amy_community.entity.User;
+import kr.adapterz.amy_community.service.CommentService;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
+@RequiredArgsConstructor
 public class CommentController {
 
     private final CommentService commentService;
 
-    // 댓글 등록
     @PostMapping
-    public Map<String, Object> create(@RequestBody CreateCommentRequest req) {
-        CommentResponse data = commentService.create(req);
+    public ResponseEntity<CommentResponse> create(
+            @Valid @RequestBody CommentCreateRequest request,
+            Authentication auth
+    ) {
+        User user = (User) auth.getPrincipal(); // JWT 인증된 사용자
 
-        return (data == null)
-                ? Map.of("message", "fail")
-                : Map.of("message", "comment_created", "data", data);
-    }
-
-    // 댓글 목록
-    @GetMapping("/post/{postId}")
-    public Map<String, Object> list(@PathVariable Long postId) {
-        return Map.of(
-                "message", "comment_list",
-                "data", commentService.list(postId)
+        Comment saved = commentService.create(
+                request.getPostId(),
+                user.getId(),
+                request.getContent()
         );
+
+        return ResponseEntity.ok(CommentResponse.of(saved));
     }
 
-    // 댓글 수정
-    @PutMapping("/{id}")
-    public Map<String, Object> update(
-            @PathVariable Long id,
-            @RequestBody UpdateCommentRequest req) {
+    @GetMapping("/post/{postId}")
+    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long postId) {
 
-        CommentResponse data = commentService.update(id, req);
+        List<CommentResponse> list = commentService.findByPostId(postId)
+                .stream()
+                .map(CommentResponse::of)
+                .toList();
 
-        return (data == null)
-                ? Map.of("message", "comment_not_found")
-                : Map.of("message", "comment_updated", "data", data);
+        return ResponseEntity.ok(list);
     }
 
-    // 댓글 삭제
-    @DeleteMapping("/{id}")
-    public Map<String, Object> delete(@PathVariable Long id) {
-        boolean ok = commentService.delete(id);
+    @PatchMapping("/{commentId}")
+    public ResponseEntity<CommentResponse> update(
+            @PathVariable Long commentId,
+            @Valid @RequestBody CommentUpdateRequest request,
+            Authentication auth
+    ) {
+        User user = (User) auth.getPrincipal();
 
-        return Map.of("message", ok ? "comment_deleted" : "comment_not_found");
+        Comment updated = commentService.update(
+                commentId,
+                user.getId(),     // 수정 요청자
+                request.getContent()
+        );
+
+        return ResponseEntity.ok(CommentResponse.of(updated));
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long commentId,
+            Authentication auth
+    ) {
+        User user = (User) auth.getPrincipal();
+
+        commentService.delete(commentId, user.getId());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Data
+    public static class CommentCreateRequest {
+        private Long postId;
+        private String content;
+    }
+
+    @Data
+    public static class CommentUpdateRequest {
+        private String content;
+    }
+
+    @Data
+    public static class CommentResponse {
+        private Long id;
+        private Long postId;
+        private Long userId;
+        private String content;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+
+        public static CommentResponse of(Comment comment) {
+            CommentResponse dto = new CommentResponse();
+            dto.id = comment.getId();
+            dto.postId = comment.getPost().getId();
+            dto.userId = comment.getUser().getId();
+            dto.content = comment.getContent();
+            dto.createdAt = comment.getCreatedAt();
+            dto.updatedAt = comment.getUpdatedAt();
+            return dto;
+        }
     }
 }

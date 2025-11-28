@@ -1,7 +1,11 @@
 package kr.adapterz.amy_community.controller;
 
+import kr.adapterz.amy_community.entity.User;
+import kr.adapterz.amy_community.repository.LikeRepository;
 import kr.adapterz.amy_community.service.LikeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -12,13 +16,23 @@ import java.util.Map;
 public class LikeController {
 
     private final LikeService likeService;
+    private final LikeRepository likeRepository;
 
-    // 좋아요 토글
     @PostMapping
-    public Map<String, Object> toggle(
+    public ResponseEntity<Map<String, Object>> toggleLike(
             @RequestParam Long postId,
-            @RequestParam Long userId) {
+            Authentication auth
+    ) {
+        User user = (User) auth.getPrincipal();
 
-        return likeService.toggle(postId, userId);
+        boolean liked = likeService.toggleLike(user.getId(), postId);
+        long likeCount = likeRepository.countByPost_Id(postId);
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "liked", liked,
+                        "likeCount", likeCount
+                )
+        );
     }
 }

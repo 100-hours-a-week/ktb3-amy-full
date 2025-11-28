@@ -3,23 +3,28 @@ package kr.adapterz.amy_community.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @Table(name = "post_like")
-public class PostLikeEntity {
+public class Like {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "like_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    private PostEntity post;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+
+    public Like(User user, Post post) {
+        this.user = user;
+        this.post = post;
+    }
 }

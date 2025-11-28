@@ -1,90 +1,146 @@
 package kr.adapterz.amy_community.controller;
 
-import kr.adapterz.amy_community.dto.user.UserLoginRequest;
-import kr.adapterz.amy_community.dto.user.UserResponse;
+import jakarta.validation.Valid;
+import kr.adapterz.amy_community.entity.User;
 import kr.adapterz.amy_community.service.UserService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
 
-    // 회원가입 (multipart/form-data)
-    @PostMapping(consumes = "multipart/form-data")
-    public Map<String, Object> signup(
-            @RequestParam("email") String email,
-            @RequestParam("password") String password,
-            @RequestParam("nickname") String nickname,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
-    ) {
-        UserResponse data = userService.signup(email, password, nickname, profileImage);
-        return Map.of("message", "signup_success", "data", data);
-    }
+    @GetMapping("/users/me")
+    public ResponseEntity<?> me(Authentication authentication) {
 
-    // 로그인
-    @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody UserLoginRequest req) {
-        UserResponse data = userService.login(req);
+        User user = (User) authentication.getPrincipal();
 
-        return (data == null)
-                ? Map.of("message", "login_fail")
-                : Map.of("message", "login_success", "data", data);
-    }
-
-    // 단건 조회
-    @GetMapping("/{id}")
-    public Map<String, Object> get(@PathVariable Long id) {
-        UserResponse data = userService.getUser(id);
-
-        return (data == null)
-                ? Map.of("message", "user_not_found")
-                : Map.of("message", "user_detail", "data", data);
-    }
-
-    // 닉네임 중복 체크
-    @GetMapping("/check-nickname")
-    public Map<String, Object> checkNickname(@RequestParam String nickname) {
-        boolean exists = userService.existsByNickname(nickname);
-        return Map.of("exists", exists);
-    }
-
-    // 회원 정보 수정 (닉네임 + 프로필 이미지)
-    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
-    public Map<String, Object> updateUser(
-            @PathVariable Long id,
-            @RequestParam("nickname") String nickname,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
-    ) {
-        UserResponse data = userService.updateUser(id, nickname, profileImage);
-        return Map.of("message", "user_updated", "data", data);
-    }
-
-    // ⭐⭐ 비밀번호 변경 API (추가된 부분) ⭐⭐
-    @PutMapping("/{id}/password")
-    public Map<String, Object> updatePassword(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> req
-    ) {
-        String password = req.get("password");
-
-        boolean ok = userService.updatePassword(id, password);
-
-        return Map.of(
-                "message", ok ? "password_updated" : "user_not_found"
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "me_success",
+                        "data", UserResponse.of(user)
+                )
         );
     }
 
-    // 회원 탈퇴
-    @DeleteMapping("/{id}")
-    public Map<String, Object> delete(@PathVariable Long id) {
-        boolean ok = userService.deleteUser(id);
-        return Map.of("message", ok ? "user_deleted" : "user_not_found");
+    @GetMapping("/users/exists/email")
+    public boolean existsByEmail(@RequestParam String email) {
+        return userService.existsByEmail(email);
+    }
+
+    @GetMapping("/users/exists/nickname")
+    public boolean existsByNickname(@RequestParam String nickname) {
+        return userService.countByNickname(nickname) > 0;
+    }
+
+    @GetMapping("/users/{id}")
+    public UserResponse findById(@PathVariable Long id) {
+        return UserResponse.of(userService.findById(id));
+    }
+
+    @PatchMapping("/users/me")
+    public UserResponse update(
+            Authentication authentication,
+            @Valid @RequestBody UpdateUserRequest request
+    ) {
+        User loginUser = (User) authentication.getPrincipal();
+
+        User updated = userService.update(
+                loginUser.getId(),     // ID를 직접 받지 않음 (보안 강화)
+                request.nickname,
+                request.deleteImage,
+                request.profileImageBase64
+        );
+
+        return UserResponse.of(updated);
+    }
+
+    @PatchMapping("/users/me/password")
+    public UserResponse updatePassword(
+            Authentication authentication,
+            @Valid @RequestBody PasswordUpdateRequest request
+    ) {
+        User loginUser = (User) authentication.getPrincipal();
+
+        User updated = userService.updatePassword(
+                loginUser.getId(),
+                request.newPassword,
+                request.newPasswordCheck
+        );
+
+        return UserResponse.of(updated);
+    }
+
+    @DeleteMapping("/users/me")
+    public void delete(Authentication authentication) {
+        User loginUser = (User) authentication.getPrincipal();
+        userService.delete(loginUser.getId());
+    }
+
+    @Data
+    public static class UpdateUserRequest {
+        public String nickname;
+        public Boolean deleteImage;
+        public String profileImageBase64;
+    }
+
+    @Data
+    public static class PasswordUpdateRequest {
+        public String newPassword;
+        public String newPasswordCheck;
+    }
+
+    @Data
+    public static class UserResponse {
+        private Long id;
+        private String email;
+        private String nickname;
+        private String profileImageUrl;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+        private String createdBy;
+        private String updatedBy;
+
+        public static UserResponse of(User user) {
+
+            String profileUrl = user.getProfileImageUrl();
+            if (profileUrl != null && profileUrl.startsWith("/uploads")) {
+                profileUrl = "http://localhost:8080" + profileUrl;
+            }
+
+            return new UserResponse(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getNickname(),
+                    profileUrl,
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    user.getCreatedBy(),
+                    user.getUpdatedBy()
+            );
+        }
+
+        public UserResponse(Long id, String email, String nickname,
+                            String profileImageUrl,
+                            LocalDateTime createdAt, LocalDateTime updatedAt,
+                            String createdBy, String updatedBy) {
+            this.id = id;
+            this.email = email;
+            this.nickname = nickname;
+            this.profileImageUrl = profileImageUrl;
+            this.createdAt = createdAt;
+            this.updatedAt = updatedAt;
+            this.createdBy = createdBy;
+            this.updatedBy = updatedBy;
+        }
     }
 }

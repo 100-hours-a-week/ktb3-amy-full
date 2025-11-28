@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/amy_community?serverTimezone=UTC&useSSL=false&characterEncoding=utf8
+    username: root
+    password: Amysm9022@
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  application:
+    name: amy-community
+
+  profiles:
+    active: dev
+
+  web:
+    resources:
+      static-locations:
+        - classpath:/static/
+        - file:/Users/sumin/amy-community/uploads/
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+jwt:
+  secret: "최소 32바이트 이상 비밀키"
+  expiration:
+    access: 1800000
+    refresh: 1209600000
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    io.jsonwebtoken: DEBUG
