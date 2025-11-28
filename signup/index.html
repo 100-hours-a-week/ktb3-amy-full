@@ -2,15 +2,15 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Sign in</title>
-  <link rel="stylesheet" href="/signup/style.css" />
+  <title>Sign up</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
 
   <div class="container card-glass fade-in">
 
     <!-- 타이틀 -->
-    <h1 class="title neon-text">Sign in</h1>
+    <h1 class="title neon-text">Sign up</h1>
 
     <!-- 프로필 이미지 -->
     <div class="profile-wrapper">
@@ -55,13 +55,16 @@
     <button id="signupBtn" class="btn signup-btn neon-hover" disabled>회원가입</button>
 
     <!-- 로그인 이동 -->
-    <button id="goLoginBtn" class="link-btn glow-text">이미 계정이 있으신가요? 로그인</button>
+    <button id="goLoginBtn" class="link-btn glow-text">
+      이미 계정이 있으신가요? 로그인
+    </button>
 
     <!-- 토스트 메시지 -->
     <div id="toast" class="toast hidden">회원가입 실패</div>
 
   </div>
 
-  <script src="./script.js"></script>
+  <script type="module" src="./script.js"></script>
+
 </body>
 </html>

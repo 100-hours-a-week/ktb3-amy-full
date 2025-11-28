@@ -3,9 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <title>게시글 상세</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- 공통 헤더 스타일 -->
+  <link rel="stylesheet" href="../common/header.css" />
+
+  <!-- 페이지 CSS -->
+  <link rel="stylesheet" href="/post/style.css" />
 </head>
 <body>
+
+  <!-- MoveCrew 공통 헤더 -->
+  <header class="global-header header-glass">
+
+    <h1 class="logo neon-logo">MoveCrew</h1>
+
+    <div class="profile-area">
+      <img 
+        id="headerProfileImg" 
+        class="profile-img profile-glow" 
+        src="/images/default-profile.png"
+        alt="profile"
+        draggable="false"
+      />
+
+      <!-- 드롭다운 -->
+      <div id="headerDropdown" class="profile-dropdown dropdown-glass hidden">
+        <div class="dropdown-item" data-action="edit-profile">회원정보 수정</div>
+        <div class="dropdown-item" data-action="edit-password">비밀번호 수정</div>
+        <div class="dropdown-item logout-item" data-action="logout">로그아웃</div>
+      </div>
+    </div>
+
+  </header>
+
 
   <!-- 모달 오버레이 -->
   <div id="modalOverlay" class="modal-overlay hidden"></div>
@@ -19,15 +49,15 @@
       </div>
   </div>
 
-  <!-- 헤더 -->
-  <header class="header-glass fade-in">
+  <!-- 게시글 상단 (header → div 로 변경) -->
+  <div class="post-header fade-in">
     <button id="backBtn" class="back-btn neon-hover">← 목록</button>
 
     <div class="post-actions">
       <button id="editBtn" class="edit-btn action-btn neon-hover">수정</button>
       <button id="deleteBtn" class="delete-btn action-btn neon-hover">삭제</button>
     </div>
-  </header>
+  </div>
 
   <!-- 게시글 내용 -->
   <main class="post-wrapper fade-in">
@@ -53,7 +83,7 @@
     </div>
 
     <!-- 좋아요 버튼 -->
-    <button id="likeBtn" class="like-btn disabled neon-hover">
+    <button id="likeBtn" class="like-btn neon-hover">
       좋아요 👍
     </button>
 
@@ -82,8 +112,11 @@
 
   </main>
 
-  <!-- 스크립트 -->
-  <script src="script.js"></script>
-  <script src="/common/dropdown.js"></script>
+  <!-- 공통 헤더 스크립트 -->
+  <script type="module" src="/common/header.js"></script>
+
+  <!-- 페이지 스크립트 -->
+  <script type="module" src="/post/script.js"></script>
+
 </body>
 </html>

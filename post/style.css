@@ -5,7 +5,8 @@ body {
   color: #ffffff;
 }
 
-header {
+/* 게시글 상단 헤더 */
+.post-header {
   background: rgba(255, 255, 255, 0.06);
   padding: 14px 18px;
   display: flex;
@@ -16,14 +17,7 @@ header {
   box-shadow: 0 0 18px rgba(155, 92, 255, 0.25);
 }
 
-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0;
-  color: #fff;
-  text-shadow: 0 0 12px rgba(155, 92, 255, 0.7);
-}
-
+/* 버튼 공통 스타일 */
 .back-btn,
 .edit-btn,
 .delete-btn {
@@ -55,6 +49,7 @@ main {
   animation: fadeIn 0.5s ease;
 }
 
+/* 제목 */
 .post-title {
   font-size: 24px;
   font-weight: 700;
@@ -69,6 +64,7 @@ main {
   white-space: pre-line;
 }
 
+/* 이미지 */
 .post-image {
   max-width: 100%;
   border-radius: 14px;
@@ -83,6 +79,7 @@ main {
   box-shadow: 0 0 30px rgba(155, 92, 255, 0.45);
 }
 
+/* 조회수/좋아요/댓글 */
 .stats {
   margin-top: 16px;
   font-size: 14px;
@@ -96,6 +93,7 @@ main {
   gap: 14px;
 }
 
+/* 좋아요 버튼 */
 .like-btn {
   margin-top: 16px;
   padding: 12px 16px;
@@ -108,11 +106,7 @@ main {
   font-size: 15px;
 }
 
-.like-btn.disabled {
-  background: rgba(255,255,255,0.15);
-  color: #aaa;
-}
-
+/* 기본 상태 = “좋아요 누르기 전” = 보라색 빛남 */
 .like-btn.enabled {
   background: #9b5cff;
   color: white;
@@ -124,6 +118,14 @@ main {
   box-shadow: 0 0 22px rgba(155, 92, 255, 0.9);
 }
 
+/* 좋아요 누르고 나면 = disabled 상태 = 하얗게 */
+.like-btn.disabled {
+  background: rgba(255,255,255,0.15);
+  color: #aaa;
+  box-shadow: none;
+}
+
+/* 댓글 구역 */
 .comment-section {
   margin-top: 36px;
 }
@@ -135,6 +137,7 @@ main {
   text-shadow: 0 0 10px rgba(155, 92, 255, 0.5);
 }
 
+/* 댓글 입력 */
 textarea {
   width: 100%;
   height: 90px;
@@ -176,7 +179,6 @@ textarea:focus {
   background: #7c38ff;
 }
 
-/* 댓글 리스트 */
 .comment-list {
   list-style: none;
   padding: 0;
@@ -215,6 +217,7 @@ textarea:focus {
   box-shadow: 0 0 12px rgba(155, 92, 255, 0.6);
 }
 
+/* 모달 */
 .modal-overlay {
   position: fixed;
   top: 0;

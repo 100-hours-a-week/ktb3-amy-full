@@ -4,19 +4,42 @@
   <meta charset="UTF-8" />
   <title>게시글 작성</title>
 
+  <!-- 공통 헤더 CSS -->
+  <link rel="stylesheet" href="../common/header.css" />
+
   <!-- 페이지 전용 CSS -->
   <link rel="stylesheet" href="/makepost/style.css" />
 </head>
 <body>
 
-  <!-- 상단 헤더 (글래스 스타일) -->
-  <header class="header-glass fade-in">
-    <h1 class="title neon-text">게시글 작성</h1>
-    <button id="backBtn" class="back-btn neon-hover">← 목록</button>
+  <!-- MoveCrew 공통 헤더 -->
+  <header class="global-header header-glass">
+
+    <h1 class="logo neon-logo">MoveCrew</h1>
+
+    <div class="profile-area">
+      <img 
+        id="headerProfileImg" 
+        class="profile-img profile-glow" 
+        src="/images/default-profile.png"
+        alt="profile"
+        draggable="false"
+      />
+
+      <div id="headerDropdown" class="profile-dropdown dropdown-glass hidden">
+        <div class="dropdown-item" data-action="edit-profile">회원정보 수정</div>
+        <div class="dropdown-item" data-action="edit-password">비밀번호 수정</div>
+        <div class="dropdown-item logout-item" data-action="logout">로그아웃</div>
+      </div>
+    </div>
+
   </header>
 
   <!-- 메인 작성 폼 -->
   <main class="form-wrapper fade-in">
+
+    <!-- 뒤로가기 -->
+    <button id="backBtn" class="back-btn neon-hover">← 목록</button>
 
     <!-- 제목 -->
     <div class="form-group">
@@ -51,7 +74,6 @@
         class="file-input"
       />
 
-      <!-- 이미지 미리보기 -->
       <img 
         id="previewImage" 
         class="preview hidden preview-glow"
@@ -69,7 +91,11 @@
 
   </main>
 
-  <script src="/makepost/script.js"></script>
-  <script src="/common/dropdown.js"></script>
+  <!-- 공통 헤더 스크립트 -->
+  <script type="module" src="../common/header.js"></script>
+
+  <!-- 페이지 전용 스크립트 -->
+  <script type="module" src="/makepost/script.js"></script>
+
 </body>
 </html>

@@ -1,8 +1,31 @@
-const userId = localStorage.getItem("userId");
+import { fetchWithAuth } from "../common/fetchWithAuth.js";
+import { API_BASE_URL } from "../common/config.js";
 
-// ==================================================
-//                뒤로가기 버튼 (존재할 때만 실행)
-// ==================================================
+function getUserIdOrRedirect() {
+  const raw = localStorage.getItem("userId");
+
+  if (!raw) {
+    alert("로그인이 필요합니다.");
+    window.location.href = "/login/index.html";
+    return null;
+  }
+
+  const id = Number(raw);
+
+  if (!id || id <= 0) {
+    alert("로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.");
+    window.location.href = "/login/index.html";
+    return null;
+  }
+
+  return id;
+}
+
+// 로그인 사용자 검증
+const userId = getUserIdOrRedirect();
+if (!userId) throw new Error("로그인되지 않은 상태에서 접근 불가");
+
+// 뒤로가기
 const backBtn = document.getElementById("backBtn");
 if (backBtn) {
   backBtn.addEventListener("click", () => {
@@ -19,31 +42,25 @@ const passwordCheckError = document.getElementById("passwordCheckError");
 const updateBtn = document.getElementById("updateBtn");
 const toast = document.getElementById("toast");
 
-
-// ==================================================
-//          1. 비밀번호 유효성 검사 함수
-// ==================================================
+// 비밀번호 규칙 검증
 function validatePassword(pw) {
   const regex =
     /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_\-\+=<>?]).{8,20}$/;
   return regex.test(pw);
 }
 
-// input 이벤트
+// 실시간 입력 검증
 passwordInput.addEventListener("input", validateForm);
 passwordCheckInput.addEventListener("input", validateForm);
 
-
-// ==================================================
-//          2. 전체 폼 검증 + 버튼 활성화
-// ==================================================
+// 입력 검증 함수
 function validateForm() {
   const pw = passwordInput.value.trim();
   const pw2 = passwordCheckInput.value.trim();
 
   let valid = true;
 
-  // --- 비밀번호 검증 ---
+  // 비밀번호 검증
   if (!pw) {
     passwordError.textContent = "*비밀번호를 입력해주세요.";
     passwordError.classList.remove("hidden");
@@ -57,7 +74,7 @@ function validateForm() {
     passwordError.classList.add("hidden");
   }
 
-  // --- 비밀번호 확인 검증 ---
+  // 비밀번호 확인 검증
   if (!pw2) {
     passwordCheckError.textContent = "*비밀번호를 한 번 더 입력해주세요.";
     passwordCheckError.classList.remove("hidden");
@@ -70,15 +87,11 @@ function validateForm() {
     passwordCheckError.classList.add("hidden");
   }
 
-  // --- 버튼 활성화 ---
+  // 버튼 상태 변경
   updateBtn.disabled = !valid;
   updateBtn.classList.toggle("enabled", valid);
 }
 
-
-// ==================================================
-//              3. 수정하기(PATCH)
-// ==================================================
 updateBtn.addEventListener("click", async () => {
   const pw = passwordInput.value.trim();
   const pw2 = passwordCheckInput.value.trim();
@@ -89,8 +102,8 @@ updateBtn.addEventListener("click", async () => {
   };
 
   try {
-    const res = await fetch(
-      `http://localhost:8080/api/v1/users/${userId}/password`,
+    const res = await fetchWithAuth(
+      `${API_BASE_URL}/api/v1/users/me/password`,   
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -103,16 +116,16 @@ updateBtn.addEventListener("click", async () => {
       return;
     }
 
-    // 성공
+    // 성공 UI
     showToast();
 
-    // 입력 초기화
+    // UI 초기화
     passwordInput.value = "";
     passwordCheckInput.value = "";
     updateBtn.disabled = true;
     updateBtn.classList.remove("enabled");
 
-    // 돌아가기
+    // 프로필 페이지로 이동
     setTimeout(() => {
       window.location.href = "/editprofile/index.html";
     }, 1200);
@@ -123,10 +136,7 @@ updateBtn.addEventListener("click", async () => {
   }
 });
 
-
-// ==================================================
-//                4. 토스트 메시지
-// ==================================================
+// 토스트 메시지
 function showToast() {
   toast.classList.remove("hidden");
   toast.classList.add("show");

@@ -1,51 +1,29 @@
+import { fetchWithAuth } from "../common/fetchWithAuth.js";
+import { API_BASE_URL } from "../common/config.js";
+
 const postContainer = document.getElementById("postContainer");
 const createBtn = document.getElementById("createBtn");
 const loading = document.getElementById("loading");
 const endMessage = document.getElementById("endMessage");
-const headerProfileImg = document.getElementById("headerProfileImg");
 
 let page = 0;
 let isLoading = false;
 let end = false;
 
-async function loadProfileImage() {
-  const userId = localStorage.getItem("userId");
-  if (!userId) return;
-
-  try {
-    const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`);
-    const data = await res.json();
-
-    let imageUrl = data.profileImageUrl;
-
-    if (imageUrl && imageUrl.startsWith("/uploads")) {
-      imageUrl = "http://localhost:8080" + imageUrl;
-    }
-
-    headerProfileImg.src = imageUrl || "/images/default-profile.png";
-
-    // 이미지 로드 실패 대비 fallback
-    headerProfileImg.onerror = () => {
-      headerProfileImg.src = "/images/default-profile.png";
-    };
-  } catch (e) {
-    console.error("프로필 이미지 로딩 실패:", e);
-    headerProfileImg.src = "/images/default-profile.png";
-  }
-}
-
-loadProfileImage();
-
+// 버튼 호버 효과
 createBtn.addEventListener("mouseover", () => {
   createBtn.classList.add("hover-effect");
 });
 createBtn.addEventListener("mouseleave", () => {
   createBtn.classList.remove("hover-effect");
 });
+
+// 게시글 작성 페이지 이동
 createBtn.addEventListener("click", () => {
-  window.location.href = "/makepost/index.html";
+  window.location.href = "../makepost/index.html";
 });
 
+// 숫자 포맷
 function formatCount(num) {
   if (num >= 100000) return "100k";
   if (num >= 10000) return "10k";
@@ -53,6 +31,7 @@ function formatCount(num) {
   return num;
 }
 
+// 날짜 포맷
 function formatDate(dateString) {
   const d = new Date(dateString);
   const yyyy = d.getFullYear();
@@ -64,6 +43,7 @@ function formatDate(dateString) {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}:${sec}`;
 }
 
+// 게시글 카드 생성
 function createPostCard(post) {
   const card = document.createElement("div");
   card.classList.add("post-card");
@@ -89,19 +69,19 @@ function createPostCard(post) {
     </div>
   `;
 
-  // hover 용 CSS class 지원
   card.classList.add("card-hover");
 
-  // 상세 페이지 이동
+  // 카드 전체 클릭 → 상세 페이지 이동
   card.addEventListener("click", (e) => {
-    if (e.target.closest(".more-btn")) return;
-    if (e.target.closest(".dropdown-menu")) return;
-    window.location.href = `/post/index.html?id=${post.id}`;
+    if (e.target.closest(".more-btn")) return; // ⋯ 버튼 눌렀으면 이동X
+    if (e.target.closest(".dropdown-menu")) return; // 메뉴 눌렀으면 이동X
+    window.location.href = `../post/index.html?id=${post.id}`;
   });
 
   return card;
 }
 
+// 게시글 로딩
 async function loadPosts() {
   if (isLoading || end) return;
 
@@ -109,15 +89,15 @@ async function loadPosts() {
   loading.classList.remove("hidden");
 
   try {
-    const res = await fetch(
-      `http://localhost:8080/api/v1/posts/search/slice?keyword=&page=${page}&size=10&sortBy=id&direction=desc`
+    const res = await fetchWithAuth(
+      `${API_BASE_URL}/api/v1/posts/search/slice?keyword=&page=${page}&size=10&sortBy=id&direction=desc`
     );
 
     if (!res.ok) throw new Error("불러오기 실패");
 
     const slice = await res.json();
 
-    slice.content.forEach(post => {
+    slice.content.forEach((post) => {
       postContainer.appendChild(createPostCard(post));
     });
 
@@ -127,8 +107,9 @@ async function loadPosts() {
     }
 
     page++;
+
   } catch (err) {
-    console.error("게시글 로딩 중 오류:", err);
+    console.error("게시글 로딩 오류:", err);
     alert("게시글을 불러오는 중 오류가 발생했습니다.");
   }
 
@@ -136,10 +117,11 @@ async function loadPosts() {
   isLoading = false;
 }
 
+// 초기 로딩
 loadPosts();
 
+// 무한 스크롤 (Throttle)
 let throttleTimer = null;
-
 window.addEventListener("scroll", () => {
   if (throttleTimer) return;
 
@@ -152,21 +134,22 @@ window.addEventListener("scroll", () => {
   }, 220);
 });
 
+// ⋯ 버튼 + 드롭다운 메뉴 열기
 document.addEventListener("click", (e) => {
   const btn = e.target.closest(".more-btn");
 
-  // 모든 드롭다운 닫기
+  // 열려있는 모든 드롭다운 닫기
   document.querySelectorAll(".dropdown-menu.show")
-    .forEach(menu => menu.classList.remove("show"));
+    .forEach((menu) => menu.classList.remove("show"));
 
-  // 하나 열기
+  // 새로운 ⋯ 버튼 클릭 시 토글
   if (btn) {
-    const menu = btn.nextElementSibling;
-    menu.classList.toggle("show");
+    btn.nextElementSibling.classList.toggle("show");
     e.stopPropagation();
   }
 });
 
+// 수정 / 삭제 메뉴 클릭 처리
 document.addEventListener("click", async (e) => {
   const item = e.target.closest(".dropdown-menu div");
   if (!item) return;
@@ -175,16 +158,15 @@ document.addEventListener("click", async (e) => {
   const id = item.dataset.id;
 
   if (action === "edit") {
-    window.location.href = `/editpost/index.html?id=${id}`;
+    window.location.href = `../editpost/index.html?id=${id}`;
     return;
   }
 
   if (action === "delete") {
-    const ok = confirm("정말 삭제하시겠습니까?");
-    if (!ok) return;
+    if (!confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/posts/${id}`, {
+      const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/posts/${id}`, {
         method: "DELETE",
       });
 
@@ -194,14 +176,8 @@ document.addEventListener("click", async (e) => {
       }
 
       const card = item.closest(".post-card");
-
-      // 삭제 애니메이션
       card.classList.add("fade-out");
-      setTimeout(() => {
-        card.remove();
-      }, 300);
-
-      alert("삭제 완료!");
+      setTimeout(() => card.remove(), 300);
 
     } catch (err) {
       console.error("삭제 오류:", err);

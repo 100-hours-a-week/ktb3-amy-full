@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "/common/config.js";
+
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("loginBtn");
@@ -13,7 +15,6 @@ function validateForm() {
   const pw = passwordInput.value.trim();
   let valid = true;
 
-  // 이메일
   if (!email) {
     emailError.textContent = "*이메일을 입력해주세요.";
     valid = false;
@@ -21,7 +22,6 @@ function validateForm() {
     emailError.textContent = "";
   }
 
-  // 비밀번호
   if (!pw) {
     passwordError.textContent = "*비밀번호를 입력해주세요.";
     valid = false;
@@ -29,18 +29,14 @@ function validateForm() {
     passwordError.textContent = "";
   }
 
-  // 버튼 활성화
   loginBtn.disabled = !valid;
   loginBtn.classList.toggle("enabled", valid);
 
-  // 활성화 시 네온 효과
-  if (valid) {
-    loginBtn.classList.add("neon-glow");
-  } else {
-    loginBtn.classList.remove("neon-glow");
-  }
+  if (valid) loginBtn.classList.add("neon-glow");
+  else loginBtn.classList.remove("neon-glow");
 }
 
+// 이벤트 연결
 emailInput.addEventListener("input", validateForm);
 passwordInput.addEventListener("input", validateForm);
 
@@ -51,45 +47,50 @@ loginBtn.addEventListener("click", async () => {
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
 
-  // 버튼 클릭 애니메이션
   loginBtn.classList.add("active-press");
   setTimeout(() => loginBtn.classList.remove("active-press"), 150);
 
   try {
-    const response = await fetch("http://localhost:8080/api/v1/auth/login", {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email, password }),
     });
 
     const result = await response.json();
+    console.log("로그인 응답:", result);
 
-    if (response.ok && result.message === "login_success") {
-      // 저장
-      localStorage.setItem("token", result.data.token);
-      localStorage.setItem("userId", result.data.id);
-      localStorage.setItem("nickname", result.data.nickname);
-      localStorage.setItem("profileImageUrl", result.data.profileImageUrl);
+    if (response.ok && result.success === true) {
+      const data = result.data;
 
-      // 버튼 성공 시 네온 색상 변경
+      // Access & Refresh Token 저장
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+
+      // 유저 정보 저장
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("email", data.email);
+      localStorage.setItem("nickname", data.nickname);
+
+      // 버튼 이펙트 + 페이지 이동
       loginBtn.style.background = "#7f6aee";
-
-      // 페이지 이동
       setTimeout(() => {
         window.location.href = "/posts/index.html";
       }, 800);
-
     } else {
       showToast();
     }
-
   } catch (e) {
+    console.error("로그인 오류:", e);
     showToast();
   }
 });
 
 // 토스트 메시지
 function showToast() {
+  if (toast.classList.contains("show")) return;
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 2000);
 }
@@ -102,5 +103,5 @@ signupBtn.addEventListener("click", () => {
   }, 300);
 });
 
-// 초기 상태 검사
+// 초기 실행
 validateForm();

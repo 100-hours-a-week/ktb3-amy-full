@@ -16,6 +16,7 @@
   animation: headerFade 0.4s ease;
 }
 
+/* 로고 */
 .logo {
   margin: 0;
   font-size: 24px;
@@ -30,10 +31,13 @@
   cursor: default;
 }
 
+/* 프로필 영역 */
 .profile-area {
   position: relative;
+  z-index: 2000;
 }
 
+/* 프로필 이미지 */
 .profile-img {
   width: 40px;
   height: 40px;
@@ -51,45 +55,54 @@
   box-shadow: 0 0 18px rgba(155, 92, 255, 0.8);
 }
 
+/* 드롭다운 */
 .profile-dropdown {
   position: absolute;
   right: 0;
   top: 52px;
 
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
+  background: rgba(25, 25, 35, 0.92); 
+  border: 1px solid rgba(155, 92, 255, 0.35);
+  border-radius: 14px;
 
   display: none;
-  min-width: 160px;
-  z-index: 999;
+  min-width: 170px;
+  z-index: 3000;
 
-  box-shadow: 0 0 18px rgba(155, 92, 255, 0.45);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 25px rgba(155, 92, 255, 0.45);
 
-  padding: 4px 0;
+  padding: 6px 0;
   transform-origin: top right;
 }
 
+/* JS에서 toggle(show) 되면 나타남 */
 .profile-dropdown.show {
-  display: block;
+  display: block !important;
   animation: dropdownFade 0.2s ease-out;
 }
 
+.hidden {
+  display: none !important;
+}
+
+/* 드롭다운 텍스트 */
 .profile-dropdown div {
   padding: 12px 18px;
   cursor: pointer;
   font-size: 15px;
-  color: #f2f2f2;
-
+  color: rgba(255, 255, 255, 0.95); 
   transition: 0.2s ease;
 }
 
+/* hover 효과 */
 .profile-dropdown div:hover {
-  background: rgba(155, 92, 255, 0.3);
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+  background: rgba(155, 92, 255, 0.25);
+  color: #fff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
 }
 
+/* 애니메이션 */
 @keyframes dropdownFade {
   from {
     opacity: 0;

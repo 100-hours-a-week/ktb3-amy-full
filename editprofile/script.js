@@ -1,3 +1,6 @@
+import { fetchWithAuth } from "../common/fetchWithAuth.js";
+import { API_BASE_URL } from "../common/config.js";
+
 const userId = localStorage.getItem("userId");
 
 const profileImg = document.getElementById("profileImg");
@@ -12,41 +15,39 @@ const confirmDelete = document.getElementById("confirmDelete");
 const toast = document.getElementById("toast");
 const backBtn = document.getElementById("backBtn");
 
-// ⚠️ 실제 기본 이미지 경로로 수정!!
 const DEFAULT_PROFILE_URL = "/images/default-profile.png";
 
+// 로그인 체크
 if (!userId) {
   window.location.href = "/login/index.html";
 }
 
-// ===========================
-// 프로필 정보 불러오기
-// ===========================
 async function loadProfile() {
   try {
-    const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`);
+    const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/users/me`);
 
     if (!res.ok) throw new Error("로드 실패");
 
-    const data = await res.json();
+    const result = await res.json();
+    const user = result.data;   
 
-    let img = data.profileImageUrl || DEFAULT_PROFILE_URL;
+    // 이미지 설정
+    let img = user.profileImageUrl || DEFAULT_PROFILE_URL;
 
-    // 서버 상대경로 보정
     if (img.startsWith("/uploads")) {
-      img = "http://localhost:8080" + img;
+      img = `${API_BASE_URL}${img}`;
     }
 
     profileImg.src = img;
     profileImg.dataset.deleted = "false";
 
-    // 🔥 무한 루프 방지 onerror 수정
     profileImg.onerror = () => {
-      profileImg.onerror = null; 
+      profileImg.onerror = null;
       profileImg.src = DEFAULT_PROFILE_URL;
     };
 
-    nicknameInput.value = data.nickname;
+    // 닉네임 설정
+    nicknameInput.value = user.nickname;  
 
   } catch (err) {
     console.error(err);
@@ -56,27 +57,19 @@ async function loadProfile() {
 
 loadProfile();
 
-// ===========================
-// 프로필 이미지 드롭다운
-// ===========================
 profileImg.addEventListener("click", (e) => {
   e.stopPropagation();
   profileDropdown.classList.toggle("hidden");
 });
 
-// 배경 클릭시 닫기
 document.addEventListener("click", () => {
   profileDropdown.classList.add("hidden");
 });
 
-// ESC 닫기
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") profileDropdown.classList.add("hidden");
 });
 
-// ===========================
-// 프로필 이미지 변경
-// ===========================
 document.querySelector("[data-value='change']").addEventListener("click", () => {
   const input = document.createElement("input");
   input.type = "file";
@@ -99,19 +92,13 @@ document.querySelector("[data-value='change']").addEventListener("click", () => 
   profileDropdown.classList.add("hidden");
 });
 
-// ===========================
-// 프로필 이미지 삭제
-// ===========================
+// 이미지 삭제
 document.querySelector("[data-value='delete']").addEventListener("click", () => {
   profileImg.src = DEFAULT_PROFILE_URL;
   profileImg.dataset.deleted = "true";
-  profileImg.onerror = null;
   profileDropdown.classList.add("hidden");
 });
 
-// ===========================
-// 닉네임 검증
-// ===========================
 let debounceTimer = null;
 
 nicknameInput.addEventListener("input", () => {
@@ -131,12 +118,11 @@ async function validateNickname() {
   if (nickname.length > 10) return showError("*닉네임은 최대 10자까지 입력 가능합니다.");
 
   try {
-    const res = await fetch(
-      `http://localhost:8080/api/v1/users/exists/nickname?nickname=${nickname}`
+    const res = await fetchWithAuth(
+      `${API_BASE_URL}/api/v1/users/exists/nickname?nickname=${nickname}`
     );
 
     const exists = await res.json();
-
     if (exists) return showError("*중복된 닉네임입니다.");
 
   } catch (err) {
@@ -164,9 +150,6 @@ function disableButton() {
   updateBtn.classList.remove("enabled");
 }
 
-// ===========================
-// 프로필 수정 저장
-// ===========================
 updateBtn.addEventListener("click", async () => {
   const nickname = nicknameInput.value.trim();
   if (!(await validateNickname())) return;
@@ -178,7 +161,7 @@ updateBtn.addEventListener("click", async () => {
   };
 
   try {
-    const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
+    const res = await fetchWithAuth(`${API_BASE_URL}/api/v1/users/me`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -193,9 +176,6 @@ updateBtn.addEventListener("click", async () => {
   }
 });
 
-// ===========================
-// 토스트
-// ===========================
 function showToast() {
   toast.classList.remove("hidden");
   toast.classList.add("show");
@@ -206,9 +186,6 @@ function showToast() {
   }, 2000);
 }
 
-// ===========================
-// 회원 탈퇴
-// ===========================
 deleteAccountBtn.addEventListener("click", () => {
   modalOverlay.classList.remove("hidden");
 });
@@ -219,7 +196,7 @@ cancelDelete.addEventListener("click", () => {
 
 confirmDelete.addEventListener("click", async () => {
   try {
-    await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
+    await fetchWithAuth(`${API_BASE_URL}/api/v1/users/me`, {
       method: "DELETE",
     });
 
@@ -232,9 +209,6 @@ confirmDelete.addEventListener("click", async () => {
   }
 });
 
-// ===========================
-// 뒤로가기
-// ===========================
 backBtn.addEventListener("click", () => {
   window.location.href = "/posts/index.html";
 });
