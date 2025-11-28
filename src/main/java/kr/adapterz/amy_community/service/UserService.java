@@ -12,14 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileUtil fileUtil;
 
-    // 외부 저장 경로 (프로필 이미지)
+    // 외부 저장 경로
     private static final String PROFILE_DIR = "/Users/sumin/amy-community/uploads/profile/";
 
     @Transactional
@@ -37,7 +37,6 @@ public class UserService {
         if (!request.getPassword().matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_\\-+=<>?]).{8,20}$"))
             throw new IllegalArgumentException("invalid_password_format");
 
-        // 비밀번호 재확인
         if (!request.getPassword().equals(request.getPasswordCheck()))
             throw new IllegalArgumentException("password_not_match");
 
@@ -52,14 +51,13 @@ public class UserService {
         if (userRepository.countByNickname(request.getNickname()) > 0)
             throw new IllegalArgumentException("duplicate_nickname");
 
-        // 프로필 이미지 저장
+        /* 프로필 이미지 처리 */
         String fileName = "default-profile.png";
 
         if (request.getProfileImageBase64() != null &&
                 !request.getProfileImageBase64().isBlank()) {
 
             String base64 = request.getProfileImageBase64();
-
             if (base64.contains(",")) {
                 base64 = base64.substring(base64.indexOf(",") + 1);
             }
@@ -90,6 +88,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public User login(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("unauthorized"));
@@ -100,6 +99,7 @@ public class UserService {
         return user;
     }
 
+    @Transactional(readOnly = true)
     public User findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("user not found"));
@@ -126,12 +126,12 @@ public class UserService {
             user.changeNickname(nickname);
         }
 
-        // 프로필 이미지 삭제
+        /* 프로필 삭제 */
         if (Boolean.TRUE.equals(deleteImage)) {
             user.changeProfileImage("/uploads/profile/default-profile.png");
         }
 
-        // 새 프로필 업로드
+        /* 새 이미지 업로드 */
         else if (profileImageBase64 != null && !profileImageBase64.isBlank()) {
 
             String base64 = profileImageBase64;
@@ -150,7 +150,7 @@ public class UserService {
             user.changeProfileImage("/uploads/profile/" + newFile);
         }
 
-        return user;
+        return userRepository.save(user);
     }
 
     @Transactional
@@ -167,7 +167,7 @@ public class UserService {
         String encodedPassword = passwordEncoder.encode(newPassword);
         user.changePassword(encodedPassword);
 
-        return user;
+        return userRepository.save(user);
     }
 
     @Transactional
@@ -175,10 +175,12 @@ public class UserService {
         userRepository.delete(findById(id));
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
+    @Transactional(readOnly = true)
     public long countByNickname(String nickname) {
         return userRepository.countByNickname(nickname);
     }
