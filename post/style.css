@@ -106,7 +106,7 @@ main {
   font-size: 15px;
 }
 
-/* 기본 상태 = “좋아요 누르기 전” = 보라색 빛남 */
+/* 기본 상태 */
 .like-btn.enabled {
   background: #9b5cff;
   color: white;
@@ -118,7 +118,7 @@ main {
   box-shadow: 0 0 22px rgba(155, 92, 255, 0.9);
 }
 
-/* 좋아요 누르고 나면 = disabled 상태 = 하얗게 */
+/* 좋아요 후 */
 .like-btn.disabled {
   background: rgba(255,255,255,0.15);
   color: #aaa;
@@ -217,7 +217,6 @@ textarea:focus {
   box-shadow: 0 0 12px rgba(155, 92, 255, 0.6);
 }
 
-/* 모달 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -226,6 +225,8 @@ textarea:focus {
   height: 100%;
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(4px);
+
+  z-index: 9998;
 }
 
 .modal {
@@ -233,14 +234,16 @@ textarea:focus {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
   padding: 22px;
   width: 260px;
   border-radius: 14px;
   text-align: center;
   backdrop-filter: blur(18px);
   border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: 0 0 22px rgba(155, 92, 255, 0.4);
+  box-shadow: 0 0 22px rgba(155, 92, 255, 0.5);
+
+  z-index: 9999;
   animation: modalPop 0.25s ease forwards;
 }
 
