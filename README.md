@@ -1,6 +1,8 @@
 MoveCrew Backend  
 스트릿 댄스 커뮤니티 서비스의 백엔드 API 서버입니다.
 
+💾 데모 영상 https://youtu.be/0EjWwmFrHkY
+
 🚀 Tech Stack
 - Java 21  
 - Spring Boot
