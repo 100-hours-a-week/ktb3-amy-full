@@ -1,6 +1,9 @@
 MoveCrew Frontend  
 스트릿 댄스 커뮤니티 웹 서비스의 프론트엔드입니다.
 
+💾 데모 영상
+https://youtu.be/0EjWwmFrHkY
+
 🚀 Tech Stack
 - HTML  
 - CSS  
